@@ -208,7 +208,9 @@ for city in city_list:
             # get_ipython().system(" rm $fp # comment if you want to save the plot")
             os.remove(fp)
             # print("Deleted:", fp)
-            gdf.loc[ID, "fractal-dimension"] = fractal_dimension(IMAGE)
+            gdf.loc[ID, "fractal-dimension"] = -fractal_dimension(
+                IMAGE
+            )  # invert sign of fractal dimension
         except Exception:
             pass
 
