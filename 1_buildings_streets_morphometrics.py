@@ -6,6 +6,7 @@ Get Buildings and Streets and run Morphometrics
 # Import modules
 
 import logging
+import logging.handlers
 import os
 import time
 import warnings
@@ -19,6 +20,7 @@ import osmnx as ox
 
 from helpers import (
     count_and_merge,
+    format_time,
     fractal_dimension,
     get_bearings,
     get_orientation_order,
@@ -27,16 +29,28 @@ from helpers import (
 
 warnings.filterwarnings("ignore")
 
-logging.basicConfig(
-    filename="morphometrics.log",
-    filemode="w",
-    format="%(asctime)s %(message)s",
-    datefmt="%m/%d/%Y %I:%M:%S %p",
-    level=logging.INFO,
+# Configure logging
+logger = logging.getLogger("logger")
+logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+fh = logging.handlers.RotatingFileHandler(
+    "morphometrics.log", maxBytes=100000, backupCount=5
 )
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 
-# # Choose City
+# Set timer
+t0 = time.perf_counter()
 
+# Choose City
 city_list = [
     "Melbourne",
     "Jerusalem",
@@ -78,18 +92,18 @@ city_list = [
 ]
 
 # city_list = city_list[8:12]
-city_list = [city_list[8]]
-logging.info(f"City list: {', '.join(city_list)}")
+city_list = [city_list[11]]
+logger.info(f"City list: {', '.join(city_list)}")
 
 for city in city_list:
-    logging.info(f"City: {city}")
+    logger.info(f"City: {city}")
     # Buildings and Streets
 
     # Read Geopackage
     data_folder = Path("../data/")
     input_file = data_folder / "0_boundaries" / city / (city + ".gpkg")
 
-    logging.info(f"Input: {input_file}")
+    logger.info(f"Input: {input_file}")
     gdf = gpd.read_file(input_file, driver="GPKG")
     # Force gdf projection
     gdf = ox.project_gdf(gdf, to_crs="epsg:4326", to_latlong=False)
@@ -108,7 +122,7 @@ for city in city_list:
     )
     out_file = data_folder / "1_buildings_streets" / (city + " - streets.gpkg")
     ox.save_graph_geopackage(G, filepath=out_file)
-    logging.info(f"Saved: {out_file}")
+    logger.info(f"Saved: {out_file}")
 
     # Get Buildings
     tags = {"building": True}
@@ -119,14 +133,14 @@ for city in city_list:
     # Save
     out_file = data_folder / "1_buildings_streets" / (city + " - buildings.gpkg")
     buildings_save.to_file(out_file, driver="GPKG")
-    logging.info(f"Saved: {out_file}")
+    logger.info(f"Saved: {out_file}")
 
     # Morphometrics
     # data_folder = Path("../data")
     # input_file = data_folder / "0_boundaries" / (city + ".gpkg")
-    # logging.info(f"Reading: {input_file}")
+    # logger.info(f"Reading: {input_file}")
     # gdf = gpd.read_file(input_file, driver="GPKG")
-    logging.info("Running Morphometrics...")
+    logger.info("Running Morphometrics...")
 
     # Clean data
     gdf["Center_point"] = gdf["geometry"].centroid
@@ -161,7 +175,6 @@ for city in city_list:
     last_ID = 0
     bookmark = True
 
-    t0 = time.perf_counter()
     # iterate through boundaries
     for ID in gdf.index:
         # Pick up where we left off or the loop broke
@@ -170,7 +183,7 @@ for city in city_list:
         else:
             bookmark = False
 
-        logging.info(f"Run {ID+1} out of {len(gdf)}: ID = {ID}")
+        logger.debug(f"Run {ID+1} out of {len(gdf)}: ID = {ID}")
 
         try:
             # get primary geometry and load network
@@ -295,9 +308,6 @@ for city in city_list:
 
     gdf["UID"] = gdf.index
 
-    t1 = time.perf_counter()
-    logging.info(f"Done. Time elapsed: {t1-t0:.0f} seconds.")
-
     # Report data availability
     vars_of_interest = [
         "avg_betweenness_centrality",
@@ -309,11 +319,14 @@ for city in city_list:
     ]
     for variable in vars_of_interest:
         if gdf[variable].isna().all():
-            logging.info(f"{variable:<40} -> missing")
+            logger.info(f"{variable:<40} -> missing")
         else:
-            logging.info(f"{variable:<40} -> available")
+            logger.info(f"{variable:<40} -> available")
 
     # Save file
     out_file = data_folder / "2_morphometrics" / (city + " - morpho.gpkg")
     gdf.to_file(out_file, driver="GPKG")
-    logging.info(f"Saved: {out_file}")
+    logger.info(f"Saved: {out_file}")
+
+t1 = time.perf_counter()
+logger.info(f"Done. Time elapsed: {format_time(t1 - t0)}")

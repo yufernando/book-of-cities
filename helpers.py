@@ -1,6 +1,7 @@
 """
 Helper functions
 """
+import logging
 import math
 import warnings
 
@@ -9,6 +10,8 @@ import osmnx as ox
 import pandas as pd
 
 warnings.filterwarnings("ignore")
+
+logger = logging.getLogger("logger." + __name__)
 
 
 def reverse_bearing(x):
@@ -120,3 +123,11 @@ def clean_heights(x):
         return float(x)
     except ValueError:
         return 0
+
+
+def format_time(time_elapsed):
+    """Takes seconds and returns hours, minutes and seconds"""
+    hours = int(time_elapsed // 3600)
+    minutes = int((time_elapsed % 3600) // 60)
+    seconds = int(time_elapsed % 60)
+    return f"{hours}h {minutes}m {seconds}s"
