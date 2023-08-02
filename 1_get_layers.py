@@ -13,9 +13,9 @@ import warnings
 from pathlib import Path
 
 import geopandas as gpd
-import imageio
 
-# import imageio.v2 as imageio
+# import imageio
+import imageio.v2 as imageio
 import momepy
 import numpy as np
 import osmnx as ox
@@ -53,17 +53,18 @@ logger.addHandler(fh)
 
 
 def main_loop(city_list):
-    # Set timer
-    t0 = time.perf_counter()
-
+    logger.info(f"City list: {', '.join(city_list)}")
     for city in city_list:
-        logger.info(f"City: {city}")
+        logger.info(f"City:      {city}")
+
+        # Set timer
+        t0 = time.perf_counter()
 
         # Read Geopackage
         data_folder = Path("../data/")
         input_file = data_folder / "0_boundaries" / city / (city + ".gpkg")
 
-        logger.info(f"Input: {input_file}")
+        logger.info(f"Boundaries: Read {input_file}")
         gdf = gpd.read_file(input_file, driver="GPKG")
         if len(gdf) > 200:
             raise TooManyPolygons(len(gdf))
@@ -97,14 +98,14 @@ def main_loop(city_list):
             out_file.unlink()
         gdf_streets.to_file(out_file, driver="GPKG")
         # ox.save_graph_geopackage(G, filepath=out_file)
-        logger.info(f"Saved: {out_file}")
+        logger.info(f"Streets:   Saved {out_file}")
 
         # Get Buildings
         tags = {"building": True}
-        buildings = ox.geometries_from_polygon(gdf_collapsed["geometry"][0], tags)
-        # buildings = ox.features_from_polygon(gdf_collapsed["geometry"][0], tags)
+        # buildings = ox.geometries_from_polygon(gdf_collapsed["geometry"][0], tags)
+        buildings = ox.features_from_polygon(gdf_collapsed["geometry"][0], tags)
         buildings = buildings[["geometry", "name"]]
-        buildings_save = buildings.drop(labels="node", axis=0)
+        buildings_save = buildings.drop(labels="node", axis=0, level=0)
 
         # Keep only polygons
         is_polygon_mask = buildings_save["geometry"].apply(
@@ -117,16 +118,17 @@ def main_loop(city_list):
         if out_file.exists():
             out_file.unlink()
         buildings_save.to_file(out_file, driver="GPKG")
-        logger.info(f"Saved: {out_file}")
+        logger.info(f"Buildings: Saved {out_file}")
 
         # Morphometrics
         # input_file = data_folder / "0_boundaries" / (city + ".gpkg")
         # logger.info(f"Reading: {input_file}")
         # gdf = gpd.read_file(input_file, driver="GPKG")
-        logger.info("Running Morphometrics...")
+        logger.info("Morphometrics...")
 
         # Clean data
-        gdf["Center_point"] = gdf["geometry"].centroid
+        # gdf["Center_point"] = gdf["geometry"].centroid
+        gdf["Center_point"] = gdf["geometry"].to_crs("+proj=cea").centroid.to_crs(4326)
         # Extract lat and lon from the centerpoint
         gdf["lon"] = gdf.Center_point.map(lambda p: p.x)
         gdf["lat"] = gdf.Center_point.map(lambda p: p.y)
@@ -137,7 +139,8 @@ def main_loop(city_list):
 
         # Calculate area of every shape
         temp = gdf.copy()
-        temp = temp.to_crs({"init": "epsg:32630"})
+        # temp = temp.to_crs({"init": "epsg:32630"})
+        temp = temp.to_crs("epsg:32630")
         temp["area_m^2"] = temp["geometry"].area
         gdf["area_m^2"] = temp["area_m^2"]
 
@@ -166,7 +169,7 @@ def main_loop(city_list):
             else:
                 bookmark = False
 
-            logger.debug(f"Run {ID+1} out of {len(gdf)}: ID = {ID}")
+            logger.debug(f"Polygon {ID+1} out of {len(gdf)}: ID = {ID}")
 
             try:
                 # get primary geometry and load network
@@ -186,7 +189,6 @@ def main_loop(city_list):
             ####################
             # Scale Complexity #
             ####################
-            print("Scale Complexity")
             try:
                 fp = f"./street-network-{ID}.png"
                 ox.plot_graph(
@@ -214,7 +216,6 @@ def main_loop(city_list):
             #######################################
             # Spatial Complexity and Connectivity #
             #######################################
-            print("Spatial Complexity and Connectivity")
             try:
                 # get 'shannon_entropy-street_orientation_order'
                 bearings = get_bearings(G, ID)
@@ -261,14 +262,13 @@ def main_loop(city_list):
             ###############################
             # Built Complexity/Morphology #
             ###############################
-            print("Built Complexity/Morphology")
             try:
-                buildings_gdf = ox.geometries_from_polygon(
-                    polygon, tags={"building": True}
-                )
-                # buildings_gdf = ox.features_from_polygon(
+                # buildings_gdf = ox.geometries_from_polygon(
                 #     polygon, tags={"building": True}
                 # )
+                buildings_gdf = ox.features_from_polygon(
+                    polygon, tags={"building": True}
+                )
                 buildings_gdf_projected = ox.project_gdf(buildings_gdf)
                 buildings_gdf_projected = buildings_gdf_projected.reset_index()
                 buildings_gdf_projected = buildings_gdf_projected[
@@ -276,7 +276,11 @@ def main_loop(city_list):
                 ]
 
                 buildings = momepy.preprocess(
-                    buildings_gdf_projected, size=30, compactness=True, islands=True
+                    buildings_gdf_projected,
+                    size=30,
+                    compactness=True,
+                    islands=True,
+                    verbose=False,
                 )
                 buildings["uID"] = momepy.unique_id(buildings)
             except Exception:
@@ -319,10 +323,10 @@ def main_loop(city_list):
         # Save file
         out_file = data_folder / "2_morphometrics" / (city + " - morpho.gpkg")
         gdf.to_file(out_file, driver="GPKG")
-        logger.info(f"Saved: {out_file}")
+        logger.info(f"Morphometrics: Saved {out_file}")
 
-    t1 = time.perf_counter()
-    logger.info(f"Done. Time elapsed: {format_time(t1 - t0)}")
+        t1 = time.perf_counter()
+        logger.info(f"Done: {city}. Time elapsed: {format_time(t1 - t0)}")
 
 
 def main():
@@ -342,13 +346,11 @@ def main():
         # city_list = cities_list[8:14]
         city_list = [cities_list[14]]
 
-    logger.info(f"City list: {', '.join(city_list)}")
-
     main_loop(city_list)
 
     if len(city_list) == 1:
         next_city = find_next_city(cities_list, city_list[0])
-        logger.info(f"Next city: {next_city}")
+        logger.info(f"Next: {next_city}")
 
 
 if __name__ == "__main__":

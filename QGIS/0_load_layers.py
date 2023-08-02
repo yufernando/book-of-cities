@@ -6,7 +6,7 @@ Load Buildings, Streets and Morphometrics and applies styles.
 Instructions: choose city.
 """
 # Choose city
-city = "Washington DC"
+city = "Cincinnati"
 
 # Import packages
 from pathlib import Path
@@ -84,7 +84,7 @@ def apply_styles():
 
 apply_styles()
 
-iface.messageBar().pushMessage("Success", "Loaded all layers", level=3, duration=5)
+iface.messageBar().pushMessage("Success", f"Loaded all layers for {city}", level=3, duration=5)
 
 
 

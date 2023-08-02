@@ -6,7 +6,7 @@ Exports images from map layout to figs folder.
 Instructions: choose city.
 """
 # Choose city
-city = "Washington DC"
+city = "Cincinnati"
 
 # Import packages
 from pathlib import Path
@@ -89,7 +89,7 @@ save_image(output_file_path)
 #saved_message(output_file_path)
 print("Saved:", output_file_path)
 
-iface.messageBar().pushMessage("Success:", "Saved all images", level=3, duration=5)
+iface.messageBar().pushMessage("Success:", f"Saved all images for {city}", level=3, duration=5)
 
 
 
