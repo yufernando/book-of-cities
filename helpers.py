@@ -11,7 +11,7 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 
-logger = logging.getLogger("logger." + __name__)
+logger = logging.getLogger("log." + __name__)
 
 
 def reverse_bearing(x):
@@ -131,3 +131,32 @@ def format_time(time_elapsed):
     minutes = int((time_elapsed % 3600) // 60)
     seconds = int(time_elapsed % 60)
     return f"{hours}h {minutes}m {seconds}s"
+
+
+def find_next_city(city_list, mystring):
+    try:
+        # Find the index of mystring in the city_list
+        index = city_list.index(mystring)
+
+        # Check if mystring is the last element in the city_list
+        if index == len(city_list) - 1:
+            return None  # No next city available
+
+        # Return the next city in the city_list
+        return city_list[index + 1]
+    except ValueError:
+        return None  # mystring not found in the city_list
+
+
+def load_cities_from_file(filename):
+    with open(filename, "r") as file:
+        cities = [city.strip() for city in file.readlines()]
+    return cities
+
+
+class Usage(Exception):
+    pass
+
+
+class TooManyPolygons(Exception):
+    pass
