@@ -13,7 +13,7 @@ import pandas as pd
 import requests
 from osm2geojson import json2geojson
 
-from helpers import Usage, find_next_city, get_city_id, get_logger
+from helpers import Usage, find_next_city, get_city_id, get_logger, help_message
 
 logger = get_logger()
 
@@ -109,7 +109,7 @@ def get_boundaries(city_list):
 
 def main():
     if len(sys.argv) == 1:
-        raise Usage("Must provide arguments")
+        raise Usage("Must provide arguments.\n" + help_message.format(__file__))
 
     city_file_provided = False
 
@@ -121,9 +121,12 @@ def main():
 
     if sys.argv[1] == "start":
         if not city_file_provided:
-            raise Usage("Must provide a list of cities in a text file.")
+            raise Usage(
+                "Must provide a list of cities in a text file.\n"
+                + help_message.format(__file__)
+            )
         if len(sys.argv) > 3:
-            raise Usage("Too many arguments")
+            raise Usage("Too many arguments.\n" + help_message.format(__file__))
         start_loc = cities_list.index(sys.argv[2])
         city_list = cities_list[start_loc:]
     else:

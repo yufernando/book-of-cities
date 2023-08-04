@@ -1,12 +1,9 @@
 """
 Load Layers and Apply Styles
-
 Load Buildings, Streets and Morphometrics and applies styles.
-
-Instructions: choose city.
 """
 # Choose city
-city = "Cincinnati"
+city = "Amsterdam"
 
 # Import packages
 from pathlib import Path
@@ -55,7 +52,6 @@ for layer_name in layer_name_list:
     layer = iface.addVectorLayer(str(layer_path), "", "ogr")
     layer.setName(layer_name)
     print(f"{city}: loaded {layer_name}")
-
 
 
 # Apply styles

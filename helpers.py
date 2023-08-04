@@ -208,3 +208,13 @@ def get_logger(filename=None):
 
     logger.info(f" Saving logs to {filename}")
     return logger
+
+
+help_message = """
+Usage: python {} [cities.txt] [start] city1 city2 city3 ...
+
+Arguments:
+cities.txt: A text file containing a list of cities.
+start: If set, will run the list starting from the provided city.
+city1 city2 city3 ...: A list of cities to run.
+"""

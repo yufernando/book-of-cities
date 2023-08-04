@@ -1,12 +1,9 @@
 """
 Export images
-
 Exports images from map layout to figs folder.
-
-Instructions: choose city.
 """
 # Choose city
-city = "Cincinnati"
+city = "Amsterdam"
 
 # Import packages
 from pathlib import Path

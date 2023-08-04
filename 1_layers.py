@@ -27,6 +27,7 @@ from helpers import (
     get_bearings,
     get_logger,
     get_orientation_order,
+    help_message,
     pp_compactness,
 )
 
@@ -48,7 +49,7 @@ def main_loop(city_list):
         input_file = data_folder / "0_boundaries" / city / (city + ".gpkg")
 
         gdf = gpd.read_file(input_file, driver="GPKG")
-        logger.info(f" Boundaries: Read {input_file}")
+        logger.info(f" Boundaries: Input {input_file} ({len(gdf)} polygons)")
         if len(gdf) > 200:
             raise TooManyPolygons(len(gdf))
 
@@ -301,9 +302,9 @@ def main_loop(city_list):
         ]
         for variable in vars_of_interest:
             if gdf[variable].isna().all():
-                logger.info(f" {variable:<40} -> missing")
+                logger.debug(f"{variable:<40} -> missing")
             else:
-                logger.info(f" {variable:<40} -> available")
+                logger.debug(f"{variable:<40} -> available")
 
         # Save file
         out_file = data_folder / "2_morphometrics" / (city + " - morpho.gpkg")
@@ -315,29 +316,37 @@ def main_loop(city_list):
 
 
 def main():
-    cities_file = "cities_europe.txt"
-    cities_file = "cities_us.txt"
-    with open(cities_file, "r") as file:
-        cities_list = [city.strip() for city in file.readlines()]
+    if len(sys.argv) == 1:
+        raise Usage(
+            "Must provide arguments.\n" + help_message.format(Path(__file__).name)
+        )
 
-    if len(sys.argv) > 3:
-        raise Usage("Too many arguments")
-    if len(sys.argv) > 2:
-        if sys.argv[1] == "start":
-            start_loc = cities_list.index(sys.argv[2])
-            city_list = cities_list[start_loc:]
-        else:
-            raise Usage("Invalid argument")
-    elif len(sys.argv) > 1:
-        city_list = [sys.argv[1]]
+    city_file_provided = False
+
+    if Path(sys.argv[1]).is_file():  # first argument is "cities.txt"
+        city_file_provided = True
+        with open(sys.argv[1]) as f:
+            cities_list = [city.strip().split(":")[0] for city in f.readlines()]
+        sys.argv = sys.argv[1:]  # remove "cities.txt" from sys.argv
+
+    if sys.argv[1] == "start":
+        if not city_file_provided:
+            raise Usage(
+                "Must provide a list of cities in a text file.\n"
+                + help_message.format(Path(__file__).name)
+            )
+        if len(sys.argv) > 3:
+            raise Usage(
+                "Too many arguments.\n" + help_message.format(Path(__file__).name)
+            )
+        start_loc = cities_list.index(sys.argv[2])
+        city_list = cities_list[start_loc:]
     else:
-        # Choose City
-        # city_list = cities_list[8:14]
-        city_list = [cities_list[14]]
+        city_list = sys.argv[1:]
 
     main_loop(city_list)
 
-    if len(city_list) == 1:
+    if city_file_provided:
         next_city = find_next_city(cities_list, city_list[0])
         logger.info(f" Next: {next_city}")
 
