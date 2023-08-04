@@ -1,0 +1,31 @@
+London
+Paris
+Barcelona
+Madrid
+Bilbao
+Berlin
+Munich
+Frankfurt
+Hamburg
+Rome
+Amsterdam: source is not OSM
+Stockholm
+Rotterdam
+Athens: source is not OSM
+Copenhagen: source is not OSM
+Brussels
+Moscow: sourced from OSM but edited after - do not overwrite Moscow.gpkg
+Saint Petersburg, Russia
+Budapest
+Vienna
+Geneva
+Zurich
+Liverpool: sourced is not OSM
+Birmingham
+Manchester
+Warsaw
+Lisbon
+Milano
+Torino
+Athens
+Istanbul

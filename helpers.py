@@ -3,11 +3,14 @@ Helper functions
 """
 import logging
 import math
+import sys
 import warnings
+from pathlib import Path
 
 import numpy as np
 import osmnx as ox
 import pandas as pd
+from geopy.geocoders import Nominatim
 
 warnings.filterwarnings("ignore")
 
@@ -160,3 +163,44 @@ class Usage(Exception):
 
 class TooManyPolygons(Exception):
     pass
+
+
+def get_city_id(city_name):
+    geolocator = Nominatim(user_agent="get-city-id")
+    geo_results = geolocator.geocode(city_name, exactly_one=False, limit=3)
+
+    city = None
+    for r in geo_results:
+        if r.raw.get("osm_type") == "relation":
+            city = r
+            break
+
+    if not city:
+        raise ValueError(f"No results found for city: {city_name}")
+
+    area_id = int(city.raw.get("osm_id")) + 3600000000
+    return area_id
+
+
+def get_logger(filename=None):
+    if not filename:
+        filename = Path(sys.argv[0]).stem
+
+    # Configure logging
+    logger = logging.getLogger("log")
+    logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
+
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    fh = logging.FileHandler(filename, mode="w")
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+
+    logger.info(f" Saving logs to {filename}")
+    return logger

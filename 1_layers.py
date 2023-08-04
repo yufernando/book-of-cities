@@ -3,9 +3,6 @@
 """
 Get Buildings and Streets and run Morphometrics
 """
-# Import modules
-
-import logging
 import os
 import sys
 import time
@@ -28,34 +25,20 @@ from helpers import (
     format_time,
     fractal_dimension,
     get_bearings,
+    get_logger,
     get_orientation_order,
-    load_cities_from_file,
     pp_compactness,
 )
 
 warnings.filterwarnings("ignore")
 
-# Configure logging
-logger = logging.getLogger("log")
-logger.setLevel(logging.DEBUG)
-
-formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-
-fh = logging.FileHandler("1_get_layers.log", mode="w")
-fh.setLevel(logging.DEBUG)
-fh.setFormatter(formatter)
-logger.addHandler(fh)
+logger = get_logger()
 
 
 def main_loop(city_list):
-    logger.info(f"City list: {', '.join(city_list)}")
+    logger.info(f" City list:  {', '.join(city_list)}")
     for city in city_list:
-        logger.info(f"City:      {city}")
+        logger.info(f" City:       {city}")
 
         # Set timer
         t0 = time.perf_counter()
@@ -64,8 +47,8 @@ def main_loop(city_list):
         data_folder = Path("../data/")
         input_file = data_folder / "0_boundaries" / city / (city + ".gpkg")
 
-        logger.info(f"Boundaries: Read {input_file}")
         gdf = gpd.read_file(input_file, driver="GPKG")
+        logger.info(f" Boundaries: Read {input_file}")
         if len(gdf) > 200:
             raise TooManyPolygons(len(gdf))
 
@@ -81,6 +64,7 @@ def main_loop(city_list):
         gdf_collapsed = gdf.dissolve(by="collapse")
 
         # Get Streets
+        logger.debug("Streets:    Downloading all streets.")
         G = ox.graph_from_polygon(
             gdf_collapsed["geometry"][0], network_type="drive", retain_all=True
         )
@@ -98,11 +82,12 @@ def main_loop(city_list):
             out_file.unlink()
         gdf_streets.to_file(out_file, driver="GPKG")
         # ox.save_graph_geopackage(G, filepath=out_file)
-        logger.info(f"Streets:   Saved {out_file}")
+        logger.info(f" Streets:    Saved {out_file}")
 
         # Get Buildings
         tags = {"building": True}
         # buildings = ox.geometries_from_polygon(gdf_collapsed["geometry"][0], tags)
+        logger.debug("Buildings:  Downloading all buildings.")
         buildings = ox.features_from_polygon(gdf_collapsed["geometry"][0], tags)
         buildings = buildings[["geometry", "name"]]
         buildings_save = buildings.drop(labels="node", axis=0, level=0)
@@ -118,13 +103,13 @@ def main_loop(city_list):
         if out_file.exists():
             out_file.unlink()
         buildings_save.to_file(out_file, driver="GPKG")
-        logger.info(f"Buildings: Saved {out_file}")
+        logger.info(f" Buildings:  Saved {out_file}")
 
         # Morphometrics
         # input_file = data_folder / "0_boundaries" / (city + ".gpkg")
         # logger.info(f"Reading: {input_file}")
         # gdf = gpd.read_file(input_file, driver="GPKG")
-        logger.info("Morphometrics...")
+        logger.info(" Morphometrics...")
 
         # Clean data
         # gdf["Center_point"] = gdf["geometry"].centroid
@@ -180,7 +165,7 @@ def main_loop(city_list):
                     simplify=True,
                     retain_all=False,
                     truncate_by_edge=True,
-                    clean_periphery=True,
+                    # clean_periphery=True,
                     custom_filter=None,
                 )
             except Exception:
@@ -316,21 +301,25 @@ def main_loop(city_list):
         ]
         for variable in vars_of_interest:
             if gdf[variable].isna().all():
-                logger.info(f"{variable:<40} -> missing")
+                logger.info(f" {variable:<40} -> missing")
             else:
-                logger.info(f"{variable:<40} -> available")
+                logger.info(f" {variable:<40} -> available")
 
         # Save file
         out_file = data_folder / "2_morphometrics" / (city + " - morpho.gpkg")
         gdf.to_file(out_file, driver="GPKG")
-        logger.info(f"Morphometrics: Saved {out_file}")
+        logger.info(f" Morphometrics: Saved {out_file}")
 
         t1 = time.perf_counter()
-        logger.info(f"Done: {city}. Time elapsed: {format_time(t1 - t0)}")
+        logger.info(f" Done: {city}. Time elapsed: {format_time(t1 - t0)}")
 
 
 def main():
-    cities_list = load_cities_from_file("cities.txt")
+    cities_file = "cities_europe.txt"
+    cities_file = "cities_us.txt"
+    with open(cities_file, "r") as file:
+        cities_list = [city.strip() for city in file.readlines()]
+
     if len(sys.argv) > 3:
         raise Usage("Too many arguments")
     if len(sys.argv) > 2:
@@ -350,7 +339,7 @@ def main():
 
     if len(city_list) == 1:
         next_city = find_next_city(cities_list, city_list[0])
-        logger.info(f"Next: {next_city}")
+        logger.info(f" Next: {next_city}")
 
 
 if __name__ == "__main__":
