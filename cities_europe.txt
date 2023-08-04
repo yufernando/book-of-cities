@@ -3,29 +3,28 @@ Paris
 Barcelona
 Madrid
 Bilbao
-Berlin
+Berlin: sourced from OSM but edited after - do not overwrite
 Munich
 Frankfurt
-Hamburg
+Hamburg: sourced from OSM but edited after - do not overwrite
 Rome
 Amsterdam: source is not OSM
-Stockholm
+Stockholm: sourced from OSM but edited after - do not overwrite   ---> RERUN 1_get_layers.py
 Rotterdam
 Athens: source is not OSM
 Copenhagen: source is not OSM
 Brussels
-Moscow: sourced from OSM but edited after - do not overwrite Moscow.gpkg
+Moscow: sourced from OSM but edited after - do not overwrite
 Saint Petersburg, Russia
 Budapest
 Vienna
 Geneva
 Zurich
 Liverpool: source is not OSM
-Birmingham
+Birmingham: sourced from OSM but edited after - do not overwrite
 Manchester
 Warsaw
 Lisbon
 Milano
-Torino: already downloaded. do not overwrite.
-Athens
-Istanbul: source is other than OSM.
+Torino
+Istanbul: sourced from OSM but edited after - do not overwrite
