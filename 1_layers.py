@@ -87,7 +87,6 @@ def main_loop(city_list):
 
         # Get Buildings
         tags = {"building": True}
-        # buildings = ox.geometries_from_polygon(gdf_collapsed["geometry"][0], tags)
         logger.debug("Buildings:  Downloading all buildings.")
         buildings = ox.features_from_polygon(gdf_collapsed["geometry"][0], tags)
         buildings = buildings[["geometry", "name"]]
@@ -107,9 +106,6 @@ def main_loop(city_list):
         logger.info(f" Buildings:  Saved {out_file}")
 
         # Morphometrics
-        # input_file = data_folder / "0_boundaries" / (city + ".gpkg")
-        # logger.info(f"Reading: {input_file}")
-        # gdf = gpd.read_file(input_file, driver="GPKG")
         logger.info(" Morphometrics...")
 
         # Clean data
@@ -249,9 +245,6 @@ def main_loop(city_list):
             # Built Complexity/Morphology #
             ###############################
             try:
-                # buildings_gdf = ox.geometries_from_polygon(
-                #     polygon, tags={"building": True}
-                # )
                 buildings_gdf = ox.features_from_polygon(
                     polygon, tags={"building": True}
                 )
