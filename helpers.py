@@ -168,6 +168,8 @@ class TooManyPolygons(Exception):
 def get_city_id(city_name):
     geolocator = Nominatim(user_agent="get-city-id")
     geo_results = geolocator.geocode(city_name, exactly_one=False, limit=3)
+    if not geo_results:
+        raise ValueError(f"Could not geolocate city: {city_name}")
 
     city = None
     for r in geo_results:
@@ -176,7 +178,9 @@ def get_city_id(city_name):
             break
 
     if not city:
-        raise ValueError(f"No results found for city: {city_name}")
+        raise ValueError(
+            f"No results of type 'relation' found after geolocating city: {city_name}"
+        )
 
     area_id = int(city.raw.get("osm_id")) + 3600000000
     return area_id
@@ -184,7 +188,7 @@ def get_city_id(city_name):
 
 def get_logger(filename=None):
     if not filename:
-        filename = Path(sys.argv[0]).stem
+        filename = Path(sys.argv[0]).stem + ".log"
 
     # Configure logging
     logger = logging.getLogger("log")

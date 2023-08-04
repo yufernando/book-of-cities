@@ -19,13 +19,20 @@ logger = get_logger()
 
 
 def get_boundaries(city_list):
-    logger.info(f" City list: {', '.join(city_list)}")
+    city_list_names_only = [city.split(":")[0] for city in city_list]
+    logger.info(f" City list: {', '.join(city_list_names_only)}")
     for city in city_list:
-        logger.info(f" City:      {city}")
-        city_id = get_city_id(city)
+        if ":" in city:
+            city, explanation = city.split(":", 1)
+            logger.info(f" City:      {city} (SKIPPED: {explanation.strip()})")
+            continue
 
-        # id = city['id']
-        # admin_level = city['admin_level']
+        logger.info(f" City:      {city}")
+        try:
+            city_id = get_city_id(city)
+        except ValueError:
+            logger.error(f"Could not geolocate city: {city}")
+            continue
 
         # Create query
         # Get city id from Nominatim
@@ -54,10 +61,8 @@ def get_boundaries(city_list):
             )
             if r.json()["elements"]:
                 logger.debug(f"admin_level={admin_level}")
-                found_boundaries = True
                 break
-
-        if not found_boundaries:
+        else:
             message = f"No boundaries found for city: {city}."
             logger.error(message)
             raise ValueError(message)
@@ -103,29 +108,30 @@ def get_boundaries(city_list):
 
 
 def main():
-    # Choose city
-    cities_file = "cities_europe.txt"
-    with open(cities_file) as f:
-        cities_list = [city.strip() for city in f.readlines()]
+    if len(sys.argv) == 1:
+        raise Usage("Must provide arguments")
 
-    if len(sys.argv) > 3:
-        raise Usage("Too many arguments")
-    if len(sys.argv) == 3:
-        if sys.argv[1] == "start":
-            start_loc = cities_list.index(sys.argv[2])
-            city_list = cities_list[start_loc:]
-        else:
-            raise Usage("Invalid argument")
-    elif len(sys.argv) == 2:
-        city_list = [sys.argv[1]]
+    city_file_provided = False
+
+    if Path(sys.argv[1]).is_file():  # first argument is "cities.txt"
+        city_file_provided = True
+        with open(sys.argv[1]) as f:
+            cities_list = [city.strip() for city in f.readlines()]
+        sys.argv = sys.argv[1:]  # remove "cities.txt" from sys.argv
+
+    if sys.argv[1] == "start":
+        if not city_file_provided:
+            raise Usage("Must provide a list of cities in a text file.")
+        if len(sys.argv) > 3:
+            raise Usage("Too many arguments")
+        start_loc = cities_list.index(sys.argv[2])
+        city_list = cities_list[start_loc:]
     else:
-        # Choose City
-        # city_list = cities_list[8:14]
-        city_list = [cities_list[14]]
+        city_list = sys.argv[1:]
 
     get_boundaries(city_list)
 
-    if len(city_list) == 1:
+    if city_file_provided:
         next_city = find_next_city(cities_list, city_list[0])
         logger.info(f" Next: {next_city}")
 

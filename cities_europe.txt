@@ -20,12 +20,12 @@ Budapest
 Vienna
 Geneva
 Zurich
-Liverpool: sourced is not OSM
+Liverpool: source is not OSM
 Birmingham
 Manchester
 Warsaw
 Lisbon
 Milano
-Torino
+Torino: already downloaded. do not overwrite.
 Athens
-Istanbul
+Istanbul: source is other than OSM.
