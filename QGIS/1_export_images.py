@@ -3,7 +3,7 @@ Export images
 Exports images from map layout to figs folder.
 """
 # Choose city
-city = "Amsterdam"
+city = "Istanbul"
 
 # Import packages
 from pathlib import Path

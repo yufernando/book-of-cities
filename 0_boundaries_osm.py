@@ -20,14 +20,14 @@ logger = get_logger()
 
 def get_boundaries(city_list):
     city_list_names_only = [city.split(":")[0] for city in city_list]
-    logger.info(f" City list: {', '.join(city_list_names_only)}")
+    logger.info(f"City list: {', '.join(city_list_names_only)}")
     for city in city_list:
         if ":" in city:
             city, explanation = city.split(":", 1)
-            logger.info(f" City:      {city} (SKIPPED: {explanation.strip()})")
+            logger.info(fCity:      {city} (SKIPPED: {explanation.strip()})")
             continue
 
-        logger.info(f" City:      {city}")
+        logger.info(f"City:      {city}")
         try:
             city_id = get_city_id(city)
         except ValueError:
@@ -54,13 +54,13 @@ def get_boundaries(city_list):
         url = "http://overpass-api.de/api/interpreter"  # Overpass API URL
 
         # Search for most granular admin_level
-        logger.debug("Making requests for most granular admin_level")
+        logger.info("Making requests for most granular admin_level")
         for admin_level in reversed(range(11)):
             r = requests.get(
                 url, params={"data": query.format(admin_level=admin_level)}
             )
             if r.json()["elements"]:
-                logger.debug(f"admin_level={admin_level}")
+                logger.info(f"admin_level={admin_level}")
                 break
         else:
             message = f"No boundaries found for city: {city}."
@@ -104,7 +104,7 @@ def get_boundaries(city_list):
         if not out_file.parent.exists():
             out_file.parent.mkdir(parents=True)
         gdf.to_file(out_file, driver="GPKG")
-        logger.info(f" Saved: {out_file}")
+        logger.info(f"Saved: {out_file}")
 
 
 def main():
@@ -136,7 +136,7 @@ def main():
 
     if city_file_provided:
         next_city = find_next_city(cities_list, city_list[0])
-        logger.info(f" Next: {next_city}")
+        logger.info(f"Next: {next_city}")
 
 
 if __name__ == "__main__":

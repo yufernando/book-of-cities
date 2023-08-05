@@ -3,7 +3,7 @@ Load Layers and Apply Styles
 Load Buildings, Streets and Morphometrics and applies styles.
 """
 # Choose city
-city = "Amsterdam"
+city = "Istanbul"
 
 # Import packages
 from pathlib import Path

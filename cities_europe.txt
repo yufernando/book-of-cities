@@ -16,7 +16,7 @@ Copenhagen: source is not OSM
 Brussels
 Moscow: sourced from OSM but edited after - do not overwrite
 Saint Petersburg, Russia
-Budapest
+Budapest: sourced from OSM but edited after - do not overwrite
 Vienna
 Geneva
 Zurich

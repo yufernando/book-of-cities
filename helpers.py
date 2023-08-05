@@ -161,10 +161,6 @@ class Usage(Exception):
     pass
 
 
-class TooManyPolygons(Exception):
-    pass
-
-
 def get_city_id(city_name):
     geolocator = Nominatim(user_agent="get-city-id")
     geo_results = geolocator.geocode(city_name, exactly_one=False, limit=3)
@@ -186,13 +182,21 @@ def get_city_id(city_name):
     return area_id
 
 
-def get_logger(filename=None):
+def get_logger(level="INFO", filename=None):
     if not filename:
         filename = Path(sys.argv[0]).stem + ".log"
 
     # Configure logging
     logger = logging.getLogger("log")
-    logger.setLevel(logging.DEBUG)
+
+    level_dict = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL,
+    }
+    logger.setLevel(level_dict[level.upper()])
 
     formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 
@@ -206,7 +210,7 @@ def get_logger(filename=None):
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
-    logger.info(f" Saving logs to {filename}")
+    logger.info(f"Saving logs to {filename}")
     return logger
 
 
