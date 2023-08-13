@@ -83,6 +83,8 @@ def get_buildings(city, gdf_collapsed, save=True):
         buildings_save.to_file(out_file, driver="GPKG")
         logger.info(f"Buildings:  Saved {out_file}")
 
+    return buildings_save
+
 
 def get_streets(city, gdf_collapsed, save=True):
     # Get Streets
@@ -106,6 +108,8 @@ def get_streets(city, gdf_collapsed, save=True):
         gdf_streets.to_file(out_file, driver="GPKG")
         # ox.save_graph_geopackage(G, filepath=out_file)
         logger.info(f"Streets:    Saved {out_file}")
+
+    return gdf_streets
 
 
 def get_morphometrics(city, gdf, save=True, full=False):
