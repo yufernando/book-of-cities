@@ -19,7 +19,7 @@ import numpy as np
 import osmnx as ox
 from shapely.errors import GEOSException
 
-from helpers import (
+from .helpers import (
     Usage,
     count_and_merge,
     find_next_city,
@@ -108,7 +108,7 @@ def get_streets(city, gdf_collapsed, save=True):
         logger.info(f"Streets:    Saved {out_file}")
 
 
-def get_morphometrics(city, gdf, save=True):
+def get_morphometrics(city, gdf, save=True, full=False):
     logger.info("Morphometrics...")
 
     # Clean data
@@ -144,6 +144,9 @@ def get_morphometrics(city, gdf, save=True):
     # Built Complexity/Morphology
     gdf["avg_building_area"] = np.nan
     gdf["avg_building_compactness"] = np.nan
+
+    if full:
+        pass
 
     # Main loop
     last_ID = 0
@@ -333,37 +336,44 @@ def main_loop(city_list):
         logger.info(f"Done: {city}. Time elapsed: {format_time(t1 - t0)}")
 
 
-def main():
-    if len(sys.argv) == 1:
+def get_city_list(argv):
+    if len(argv) == 1:
         raise Usage(
             "Must provide arguments.\n" + help_message.format(Path(__file__).name)
         )
 
     city_file_provided = False
 
-    if Path(sys.argv[1]).is_file():  # first argument is "cities.txt"
+    if Path(argv[1]).is_file():  # first argument is "cities.txt"
         city_file_provided = True
-        with open(sys.argv[1]) as f:
+        with open(argv[1]) as f:
             cities_list = [
                 city.strip().split(":")[0].split(",")[0] for city in f.readlines()
             ]
-        sys.argv = sys.argv[1:]  # remove "cities.txt" from sys.argv
+        argv = argv[1:]  # remove "cities.txt" from argv
 
-    if sys.argv[1] == "start":
+    if len(argv) == 1:
+        city_list = cities_list
+    elif argv[1] == "start":
         if not city_file_provided:
             raise Usage(
                 "Must provide a list of cities in a text file.\n"
                 + help_message.format(Path(__file__).name)
             )
-        if len(sys.argv) > 3:
+        if len(argv) > 3:
             raise Usage(
                 "Too many arguments.\n" + help_message.format(Path(__file__).name)
             )
-        start_loc = cities_list.index(sys.argv[2])
+        start_loc = cities_list.index(argv[2])
         city_list = cities_list[start_loc:]
     else:
-        city_list = sys.argv[1:]
+        city_list = argv[1:]
 
+    return city_list, cities_list, city_file_provided
+
+
+def main():
+    city_list, cities_list, city_file_provided = get_city_list(sys.argv)
     main_loop(city_list)
 
     if city_file_provided:

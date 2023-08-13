@@ -184,7 +184,7 @@ def get_city_id(city_name):
 
 def get_logger(level="INFO", filename=None):
     if not filename:
-        filename = Path(sys.argv[0]).stem + ".log"
+        filename = Path("logs") / (Path(sys.argv[0]).stem + ".log")
 
     # Configure logging
     logger = logging.getLogger("log")
