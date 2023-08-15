@@ -19,6 +19,8 @@ import numpy as np
 import osmnx as ox
 from shapely.errors import GEOSException
 
+from morpho.logger import get_logger
+
 from .helpers import (
     Usage,
     count_and_merge,
@@ -26,7 +28,6 @@ from .helpers import (
     format_time,
     fractal_dimension,
     get_bearings,
-    get_logger,
     get_orientation_order,
     help_message,
     pp_compactness,
@@ -112,16 +113,28 @@ def get_streets(city, gdf_collapsed, save=True):
     return gdf_streets
 
 
-def get_morphometrics(city, gdf, save=True, full=False):
-    logger.info("Morphometrics...")
+def get_graph(polygon):
+    """Get networkX graph from polygon."""
+    # get primary geometry and load network
+    G = ox.graph_from_polygon(
+        polygon,
+        network_type="drive",
+        simplify=True,
+        retain_all=False,
+        truncate_by_edge=True,
+        # clean_periphery=True,
+        custom_filter=None,
+    )
+    return G
 
+
+def clean_gdf(gdf):
     # Clean data
-    # gdf["Center_point"] = gdf["geometry"].centroid
     gdf["Center_point"] = gdf["geometry"].to_crs("+proj=cea").centroid.to_crs(4326)
     # Extract lat and lon from the centerpoint
     try:
-        gdf["lon"] = gdf.Center_point.map(lambda p: p.x)
-        gdf["lat"] = gdf.Center_point.map(lambda p: p.y)
+        gdf["lon"] = gdf["Center_point"].map(lambda p: p.x)
+        gdf["lat"] = gdf["Center_point"].map(lambda p: p.y)
     except GEOSException:
         pass
 
@@ -129,13 +142,52 @@ def get_morphometrics(city, gdf, save=True, full=False):
 
     # Ensure crs is correct
     gdf = ox.project_gdf(gdf, to_crs="epsg:4326", to_latlong=False)
+    return gdf
 
+
+def get_area(gdf):
     # Calculate area of every shape
     temp = gdf.copy()
-    # temp = temp.to_crs({"init": "epsg:32630"})
     temp = temp.to_crs("epsg:32630")
-    temp["area_m^2"] = temp["geometry"].area
-    gdf["area_m^2"] = temp["area_m^2"]
+    temp["area_m2"] = temp["geometry"].area
+    gdf["area_m2"] = temp["area_m2"]
+    return gdf
+
+
+def get_fractal_dimension(G):
+    # fp = f"./street-network-{ID}.png"
+    fp = f"./street-network.png"
+    ox.plot_graph(
+        G,
+        bgcolor="white",
+        node_color="black",
+        edge_color="black",
+        show=False,
+        close=True,
+        dpi=150,
+        save=True,
+        filepath=fp,
+    )
+    # I = imageio.imread(fp, as_gray="True")/255.0
+    IMAGE = imageio.imread(fp, mode="L") / 255.0
+    # get_ipython().system(" rm $fp # comment if you want to save the plot")
+    os.remove(fp)
+    # print("Deleted:", fp)
+    return -fractal_dimension(IMAGE)
+
+
+def get_entropy(G, ID):
+    # get 'shannon_entropy-street_orientation_order'
+    bearings = get_bearings(G, ID)
+    count = count_and_merge(36, bearings)
+    return get_orientation_order(count)
+
+
+def get_morphometrics(city, gdf, save=True, full=False):
+    gdf = clean_gdf(gdf)
+
+    logger.info("Morphometrics...")
+    gdf = get_area(gdf)
 
     # Define variables
 
@@ -153,76 +205,36 @@ def get_morphometrics(city, gdf, save=True, full=False):
         pass
 
     # Main loop
-    last_ID = 0
-    bookmark = True
+    # last_ID = 0
+    # bookmark = True
 
     # iterate through boundaries
     for ID in gdf.index:
         # Pick up where we left off or the loop broke
-        if (ID != last_ID) and bookmark:
-            continue
-        else:
-            bookmark = False
+        # if (ID != last_ID) and bookmark:
+        #     continue
+        # else:
+        #     bookmark = False
 
         logger.info(f"Polygon {ID+1} out of {len(gdf)}: ID = {ID}")
 
-        try:
-            logger.debug("Getting graph, fractal dimension, entropy, street length")
-            # get primary geometry and load network
-            polygon = gdf.loc[ID, "geometry"]
-            G = ox.graph_from_polygon(
-                polygon,
-                network_type="drive",
-                simplify=True,
-                retain_all=False,
-                truncate_by_edge=True,
-                # clean_periphery=True,
-                custom_filter=None,
-            )
-        except Exception:
-            pass
+        logger.debug("Getting graph, fractal dimension, entropy, street length")
+        polygon = gdf.loc[ID, "geometry"]
 
-        ####################
+        G = get_graph(polygon)
+
         # Scale Complexity #
         ####################
-        try:
-            fp = f"./street-network-{ID}.png"
-            ox.plot_graph(
-                G,
-                bgcolor="white",
-                node_color="black",
-                edge_color="black",
-                show=False,
-                close=True,
-                dpi=150,
-                save=True,
-                filepath=fp,
-            )
-            # I = imageio.imread(fp, as_gray="True")/255.0
-            IMAGE = imageio.imread(fp, mode="L") / 255.0
-            # get_ipython().system(" rm $fp # comment if you want to save the plot")
-            os.remove(fp)
-            # print("Deleted:", fp)
-            gdf.loc[ID, "fractal-dimension"] = -fractal_dimension(
-                IMAGE
-            )  # invert sign of fractal dimension
-        except Exception:
-            pass
+        gdf.loc[ID, "fractal-dimension"] = get_fractal_dimension(G)
 
         #######################################
         # Spatial Complexity and Connectivity #
         #######################################
-        try:
-            # get 'shannon_entropy-street_orientation_order'
-            bearings = get_bearings(G, ID)
-            count = count_and_merge(36, bearings)
-            street_orientation_order = get_orientation_order(count)
-            gdf.loc[
-                ID, "shannon_entropy-street_orientation_order"
-            ] = street_orientation_order
-            # print(street_orientation_order)
-        except Exception:
-            pass
+        street_orientation_order = get_entropy(G, ID)
+        gdf.loc[
+            ID, "shannon_entropy-street_orientation_order"
+        ] = street_orientation_order
+        # print(street_orientation_order)
 
         try:
             # get basic stats from network

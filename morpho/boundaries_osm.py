@@ -13,7 +13,8 @@ import pandas as pd
 import requests
 from osm2geojson import json2geojson
 
-from helpers import Usage, find_next_city, get_city_id, get_logger, help_message
+from morpho.helpers import Usage, find_next_city, get_city_id, help_message
+from morpho.logger import get_logger
 
 logger = get_logger()
 
