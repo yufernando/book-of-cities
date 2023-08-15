@@ -178,7 +178,7 @@ def get_fractal_dimension(G):
 
 def get_entropy(G, ID):
     # get 'shannon_entropy-street_orientation_order'
-    bearings = get_bearings(G, ID)
+    bearings = get_bearings(G)
     count = count_and_merge(36, bearings)
     return get_orientation_order(count)
 
@@ -230,11 +230,14 @@ def get_morphometrics(city, gdf, save=True, full=False):
         #######################################
         # Spatial Complexity and Connectivity #
         #######################################
-        street_orientation_order = get_entropy(G, ID)
-        gdf.loc[
-            ID, "shannon_entropy-street_orientation_order"
-        ] = street_orientation_order
-        # print(street_orientation_order)
+        try:
+            street_orientation_order = get_entropy(G, ID)
+            gdf.loc[
+                ID, "shannon_entropy-street_orientation_order"
+            ] = street_orientation_order
+            # print(street_orientation_order)
+        except KeyError:
+            pass
 
         try:
             # get basic stats from network

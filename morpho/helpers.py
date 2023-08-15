@@ -16,7 +16,7 @@ def reverse_bearing(x):
     return x + 180 if x < 180 else x - 180
 
 
-def get_bearings(G, ID):
+def get_bearings(G):
     # calculate the edge bearings
     Gu = ox.add_edge_bearings(ox.get_undirected(G))
 
@@ -29,12 +29,12 @@ def get_bearings(G, ID):
         for u, v, k, d in Gu.edges(keys=True, data=True):
             city_bearings.extend([d["bearing"]] * int(d["length"]))
         b = pd.Series(city_bearings)
-        bearings[ID] = pd.concat([b, b.map(reverse_bearing)]).reset_index(drop="True")
+        bearings = pd.concat([b, b.map(reverse_bearing)]).reset_index(drop="True")
     else:
         # don't weight bearings, just take one value per street segment
         b = pd.Series([d["bearing"] for u, v, k, d in Gu.edges(keys=True, data=True)])
-        bearings[ID] = pd.concat([b, b.map(reverse_bearing)]).reset_index(drop="True")
-    return bearings[ID]
+        bearings = pd.concat([b, b.map(reverse_bearing)]).reset_index(drop="True")
+    return bearings
 
 
 def count_and_merge(n, bearings):
