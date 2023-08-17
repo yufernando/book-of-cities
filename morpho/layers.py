@@ -156,7 +156,7 @@ def get_area(gdf):
 
 def get_fractal_dimension(G):
     # fp = f"./street-network-{ID}.png"
-    fp = f"./street-network.png"
+    fp = "./street-network.png"
     ox.plot_graph(
         G,
         bgcolor="white",
@@ -219,6 +219,7 @@ def get_morphometrics(city, gdf, save=True, full=False):
         logger.info(f"Polygon {ID+1} out of {len(gdf)}: ID = {ID}")
 
         logger.debug("Getting graph, fractal dimension, entropy, street length")
+
         polygon = gdf.loc[ID, "geometry"]
 
         G = get_graph(polygon)

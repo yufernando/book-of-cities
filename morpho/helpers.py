@@ -34,6 +34,7 @@ def get_bearings(G):
         # don't weight bearings, just take one value per street segment
         b = pd.Series([d["bearing"] for u, v, k, d in Gu.edges(keys=True, data=True)])
         bearings = pd.concat([b, b.map(reverse_bearing)]).reset_index(drop="True")
+
     return bearings
 
 

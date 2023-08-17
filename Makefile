@@ -12,3 +12,5 @@ token:
 	@echo "Token:"
 	@docker exec cities jupyter server list 2>&1 | grep -oE 'token=[a-zA-Z0-9]+' | cut -d'=' -f2
 
+tests:
+	pytest morpho/tests
