@@ -1,0 +1,5 @@
+STREETS = False
+BUILDINGS = False
+MORPHOMETRICS = True
+LOG_LEVEL = "INFO"
+CSV_OUT = True

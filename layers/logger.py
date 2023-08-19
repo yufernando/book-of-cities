@@ -3,12 +3,7 @@ import sys
 from pathlib import Path
 
 
-def get_logger(level="INFO", filename=None):
-    if not filename:
-        log_folder = Path("logs")
-        filename = log_folder / (Path(sys.argv[0]).stem + ".log")
-
-    # Configure logging
+def init_logger(level="INFO", filename=None):
     logger = logging.getLogger("log")
 
     level_dict = {
@@ -18,14 +13,26 @@ def get_logger(level="INFO", filename=None):
         "ERROR": logging.ERROR,
         "CRITICAL": logging.CRITICAL,
     }
-    logger.setLevel(level_dict[level.upper()])
+
+    # logger.setLevel(level_dict[level.upper()])
+    logger.setLevel(logging.DEBUG)
+
+    # if hasattr(logger, "initialized"):
+    #     return logger
+    # else:
+    #     setattr(logger, "initialized", True)
 
     formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s %(message)s")
 
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(level_dict[level.upper()])
+    # ch.setLevel(logging.DEBUG)
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+
+    if not filename:
+        log_folder = Path("logs")
+        filename = log_folder / (Path(sys.argv[0]).stem + ".log")
 
     if log_folder.exists():
         fh = logging.FileHandler(filename, mode="w")

@@ -11,12 +11,10 @@ import osmnx as ox
 # Import packages
 import pandas as pd
 import requests
+from morpho.helpers import HELP_MESSAGE, Usage, find_next_city, get_city_id
 from osm2geojson import json2geojson
 
-from morpho.helpers import Usage, find_next_city, get_city_id, help_message
-from morpho.logger import get_logger
-
-logger = get_logger()
+logger = logging.getLogger("log")
 
 
 def get_boundaries(city_list):
@@ -25,7 +23,7 @@ def get_boundaries(city_list):
     for city in city_list:
         if ":" in city:
             city, explanation = city.split(":", 1)
-            logger.info(fCity:      {city} (SKIPPED: {explanation.strip()})")
+            logger.info(f"City:      {city} (SKIPPED: {explanation.strip()})")
             continue
 
         logger.info(f"City:      {city}")
@@ -110,7 +108,7 @@ def get_boundaries(city_list):
 
 def main():
     if len(sys.argv) == 1:
-        raise Usage("Must provide arguments.\n" + help_message.format(__file__))
+        raise Usage("Must provide arguments.\n" + HELP_MESSAGE.format(__file__))
 
     city_file_provided = False
 
@@ -124,10 +122,10 @@ def main():
         if not city_file_provided:
             raise Usage(
                 "Must provide a list of cities in a text file.\n"
-                + help_message.format(__file__)
+                + HELP_MESSAGE.format(__file__)
             )
         if len(sys.argv) > 3:
-            raise Usage("Too many arguments.\n" + help_message.format(__file__))
+            raise Usage("Too many arguments.\n" + HELP_MESSAGE.format(__file__))
         start_loc = cities_list.index(sys.argv[2])
         city_list = cities_list[start_loc:]
     else:

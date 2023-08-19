@@ -1,7 +1,7 @@
 import geopandas as gpd
 import pytest
 
-from morpho.layers import get_buildings, get_polygons, get_streets
+from layers.layers import get_buildings, get_polygons, get_streets
 
 city = "test"
 
@@ -15,14 +15,14 @@ def polygons():
 @pytest.fixture(scope="module")
 def buildings_gdf(polygons):
     _, gdf_collapsed = polygons
-    buildings_gdf = get_buildings(city, gdf_collapsed, save=False)
+    buildings_gdf = get_buildings(gdf_collapsed)
     return buildings_gdf
 
 
 @pytest.fixture(scope="module")
 def streets_gdf(polygons):
     _, gdf_collapsed = polygons
-    streets_gdf = get_streets(city, gdf_collapsed, save=False)
+    streets_gdf = get_streets(gdf_collapsed)
     return streets_gdf
 
 

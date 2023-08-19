@@ -2,21 +2,28 @@
 Helper functions
 """
 import math
-import warnings
+import os
 
+import imageio.v2 as imageio
+import networkx as nx
 import numpy as np
 import osmnx as ox
 import pandas as pd
-from geopy.geocoders import Nominatim
+from shapely.errors import GEOSException
 
-warnings.filterwarnings("ignore")
+# import warnings
+
+
+# warnings.filterwarnings("ignore")
 
 
 def reverse_bearing(x):
+    """Reverse bearing"""
     return x + 180 if x < 180 else x - 180
 
 
 def get_bearings(G):
+    """Get bearings"""
     # calculate the edge bearings
     Gu = ox.add_edge_bearings(ox.get_undirected(G))
 
@@ -38,7 +45,8 @@ def get_bearings(G):
     return bearings
 
 
-def count_and_merge(n, bearings):
+def count_and_merge(n: int, bearings: pd.Series) -> np.ndarray:
+    """Count and merge"""
     # make twice as many bins as desired, then merge them in pairs
     # prevents bin-edge effects around common values like 0° and 90°
     n = n * 2
@@ -50,11 +58,13 @@ def count_and_merge(n, bearings):
     return count[::2] + count[1::2]
 
 
-def get_orientation_order(count):
+def get_orientation_order(count: np.ndarray) -> float:
+    """Calculate orientation order"""
     try:
         H0 = 0
-        for i in range(len(count)):
-            Pi = count[i] / sum(count)
+        # for i in range(len(count)):
+        for c in count:
+            Pi = c / sum(count)
             if Pi != 0:
                 H0 += Pi * np.log(Pi)
 
@@ -124,65 +134,72 @@ def clean_heights(x):
         return 0
 
 
-def format_time(time_elapsed):
-    """Takes seconds and returns hours, minutes and seconds"""
-    hours = int(time_elapsed // 3600)
-    minutes = int((time_elapsed % 3600) // 60)
-    seconds = int(time_elapsed % 60)
-    return f"{hours}h {minutes}m {seconds}s"
+def get_graph(polygon):
+    """Get networkX graph from polygon."""
+    # get primary geometry and load network
+    graph = ox.graph_from_polygon(
+        polygon,
+        network_type="drive",
+        simplify=True,
+        retain_all=False,
+        truncate_by_edge=True,
+        # clean_periphery=True,
+        custom_filter=None,
+    )
+    return graph
 
 
-def find_next_city(city_list, mystring):
+def clean_gdf(gdf):
+    """Clean gdf."""
+    gdf["Center_point"] = gdf["geometry"].to_crs("+proj=cea").centroid.to_crs(4326)
+    # Extract lat and lon from the centerpoint
     try:
-        # Find the index of mystring in the city_list
-        index = city_list.index(mystring)
+        gdf["lon"] = gdf["Center_point"].map(lambda p: p.x)
+        gdf["lat"] = gdf["Center_point"].map(lambda p: p.y)
+    except GEOSException:
+        pass
 
-        # Check if mystring is the last element in the city_list
-        if index == len(city_list) - 1:
-            return None  # No next city available
+    gdf = gdf.drop(["Center_point"], axis=1)
 
-        # Return the next city in the city_list
-        return city_list[index + 1]
-    except ValueError:
-        return None  # mystring not found in the city_list
-
-
-def load_cities_from_file(filename):
-    with open(filename, "r") as file:
-        cities = [city.strip() for city in file.readlines()]
-    return cities
+    # Ensure crs is correct
+    gdf = ox.project_gdf(gdf, to_crs="epsg:4326", to_latlong=False)
+    return gdf
 
 
-class Usage(Exception):
-    pass
+def get_area(gdf):
+    """Get area of every polygon in the gdf."""
+    temp = gdf.copy()
+    temp = temp.to_crs("epsg:32630")
+    temp["area_m2"] = temp["geometry"].area
+    gdf["area_m2"] = temp["area_m2"]
+    return gdf
 
 
-def get_city_id(city_name):
-    geolocator = Nominatim(user_agent="get-city-id")
-    geo_results = geolocator.geocode(city_name, exactly_one=False, limit=3)
-    if not geo_results:
-        raise ValueError(f"Could not geolocate city: {city_name}")
+def get_fractal_dimension(graph):
+    """Get fractal dimension of street network."""
+    # fp = f"./street-network-{ID}.png"
+    filepath = "./street-network.png"
+    ox.plot_graph(
+        graph,
+        bgcolor="white",
+        node_color="black",
+        edge_color="black",
+        show=False,
+        close=True,
+        dpi=150,
+        save=True,
+        filepath=filepath,
+    )
+    # I = imageio.imread(fp, as_gray="True")/255.0
+    image = imageio.imread(filepath, mode="L") / 255.0
+    # get_ipython().system(" rm $fp # comment if you want to save the plot")
+    os.remove(filepath)
+    # print("Deleted:", fp)
+    return -fractal_dimension(image)
 
-    city = None
-    for r in geo_results:
-        if r.raw.get("osm_type") == "relation":
-            city = r
-            break
 
-    if not city:
-        raise ValueError(
-            f"No results of type 'relation' found after geolocating city: {city_name}"
-        )
-
-    area_id = int(city.raw.get("osm_id")) + 3600000000
-    return area_id
-
-
-help_message = """
-Usage: python {} [cities.txt] [start] city1 city2 city3 ...
-
-Arguments:
-cities.txt: A text file containing a list of cities.
-start: If set, will run the list starting from the provided city.
-city1 city2 city3 ...: A list of cities to run.
-"""
+def get_entropy(graph: nx.Graph) -> float:
+    """Get entropy of street orientation order."""
+    bearings = get_bearings(graph)
+    count = count_and_merge(36, bearings)
+    return get_orientation_order(count)

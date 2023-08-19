@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from morpho.layers import get_city_list
+from layers.helpers import parse_user_input
 
 city_file = Path("data/cities_us.txt")
 
@@ -16,7 +16,7 @@ def test_city_file_is_file():
 
 
 argv = ["run.py", "data/cities_us.txt", "start", "New York"]
-city_list, cities_list, city_file_provided = get_city_list(argv)
+city_list, cities_list, city_file_provided = parse_user_input(argv)
 
 
 def test_cities_are_strings():
