@@ -1,8 +1,10 @@
-.ipynb_checkpoints/
-__pycache__/
-cache/
 *.csv
 *.log
 .coverage
-.pytest_cache/
 .vscode/
+
+.ipynb_checkpoints/
+cache/
+__pycache__/
+.pytest_cache/
+.mypy_cache/

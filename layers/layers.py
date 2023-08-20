@@ -10,6 +10,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import osmnx as ox
+import pandas as pd
 
 from layers.helpers import find_next_city, format_time, parse_user_input
 from layers.morpho import get_morphometrics
@@ -143,7 +144,26 @@ def main(buildings=True, streets=True, morphometrics=True, csv_out=True):
         logger.info("Next: %s", next_city)
 
     if csv_out:
-        pass
+        morpho_folder = data_folder / "2_morphometrics"
+        csv_folder = data_folder / "4_csv"
+        out_csv = csv_folder / "Morphometrics.csv"
+        df = pd.read_csv(out_csv)
+
+        if df["city"].nunique() > len(city_list):
+            logger.info("CSV exists and has more cities. Skipping.")
+            return
+
+        df_full = pd.DataFrame()
+        for file in morpho_folder.iterdir():
+            if " - morpho.gpkg" in file.name:
+                city_name = file.stem.split(" - morpho")[0].strip()
+                gdf = gpd.read_file(file)
+                gdf["city"] = city_name
+                df_full = pd.concat([df_full, gdf])
+
+        # Save
+        df_full.to_csv(out_csv, index=None)
+        logger.info("CSV: Saved %s", out_csv)
 
 
 if __name__ == "__main__":

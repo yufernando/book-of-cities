@@ -68,8 +68,8 @@ def get_morphometrics(
     if full:
         built_extra_vars = [
             "avg_tesselation_area",
-            "avg_building_height",
-            "avg_building_volume",
+            # "avg_building_height",
+            # "avg_building_volume",
             "avg_building_orientation",
             "avg_tessellation_orientation",
             "avg_building_cell_alignment",
@@ -232,20 +232,23 @@ def get_morphometrics(
         logger.debug("building height.")
         try:
             buildings["height"] = buildings["height"].fillna(0).apply(clean_heights)
-            if buildings["height"].mean() == 0:
+            if (buildings["height"] == 0).all():
                 pass
             else:
                 gdf.loc[index, "avg_building_height"] = buildings["height"].mean()
-        except KeyError:
+        except KeyError:  # OSM did not provide height
             pass
 
         logger.debug("avg_building_volume")
-        if (buildings["height"] == 0).all():  # if height = 0 then volume = 0
+        try:
+            if (buildings["height"] == 0).all():  # if height = 0 then volume = 0
+                pass
+            else:
+                blg_volume = momepy.Volume(buildings, heights="height")
+                buildings["volume"] = blg_volume.series
+                gdf.loc[index, "avg_building_volume"] = buildings["volume"].mean()
+        except KeyError:  # OSM did not provide height
             pass
-        else:
-            blg_volume = momepy.Volume(buildings, heights="height")
-            buildings["volume"] = blg_volume.series
-            gdf.loc[index, "avg_building_volume"] = buildings["volume"].mean()
 
         logger.debug("building orientation")
         buildings["orientation"] = momepy.Orientation(buildings, verbose=verbose).series
@@ -306,7 +309,7 @@ def get_morphometrics(
                 "widths"
             ].mean()
             gdf.loc[index, "avg_profile-street_profile"] = edges["widths"].mean()
-        except KeyError:  # 'heights' not in buildings
+        except KeyError:  # OSM did not provide height
             pass
 
         buildings["compactness"] = buildings["geometry"].apply(pp_compactness)
