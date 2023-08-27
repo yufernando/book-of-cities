@@ -3,11 +3,15 @@ Helper functions for the command line interface.
 """
 # import warnings
 
+import logging
+import sys
 from pathlib import Path
 
 from geopy.geocoders import Nominatim
 
 # warnings.filterwarnings("ignore")
+
+logger = logging.getLogger("log")
 
 
 def format_time(time_elapsed):
@@ -41,10 +45,6 @@ def load_cities_from_file(filename):
     return cities
 
 
-class Usage(Exception):
-    pass
-
-
 def get_city_id(city_name):
     """Get the city ID from the city name"""
     geolocator = Nominatim(user_agent="get-city-id")
@@ -68,7 +68,7 @@ def get_city_id(city_name):
 
 
 HELP_MESSAGE = """
-Usage: python {} [cities.txt] [start] city1 city2 city3 ...
+Usage: python run.py [cities.txt] [start] city1 city2 city3 ...
 
 Arguments:
 cities.txt: A text file containing a list of cities.
@@ -77,39 +77,44 @@ city1 city2 city3 ...: A list of cities to run.
 """
 
 
-def parse_user_input(argv):
+def parse_user_input() -> list[str]:
+    """Wrapper for parse_input using arguments provided by the user."""
+    return parse_input(sys.argv)
+
+
+def read_cities_from_file(filepath: str) -> list[str]:
+    """Read cities from a text file."""
+    with open(filepath, encoding="utf-8") as f:
+        return [city.strip().split(":")[0].split(",")[0] for city in f.readlines()]
+
+
+def parse_input(argv: list[str]) -> list[str]:
     """Parse user input and get city list."""
+    # No arguments provided
     if len(argv) == 1:
-        raise Usage(
-            "Must provide arguments.\n" + HELP_MESSAGE.format(Path(__file__).name)
-        )
+        logger.debug("No arguments provided.")
+        city_list = None
 
-    city_file_provided = False
-
-    if Path(argv[1]).is_file():  # first argument is "cities.txt"
-        city_file_provided = True
-        with open(argv[1], encoding="utf-8") as f:
-            cities_list = [
-                city.strip().split(":")[0].split(",")[0] for city in f.readlines()
-            ]
-        argv = argv[1:]  # remove "cities.txt" from argv
-
-    if len(argv) == 1:
-        city_list = cities_list
-    elif argv[1] == "start":
-        if not city_file_provided:
-            raise Usage(
-                "Must provide a list of cities in a text file.\n"
-                + HELP_MESSAGE.format(Path(__file__).name)
+    # If first argument is a file, load cities from file
+    elif Path(argv[1]).suffix == ".txt":
+        if Path(argv[1]).is_file():
+            city_list = read_cities_from_file(argv[1])
+            if len(argv) > 2:
+                if argv[2] == "start":
+                    if len(argv) == 3:
+                        raise IndexError("No city provided.\n" + HELP_MESSAGE)
+                    if len(argv) > 4:
+                        raise IndexError("Too many arguments.\n" + HELP_MESSAGE)
+                    start_loc = city_list.index(argv[3])
+                    city_list = city_list[start_loc:]
+                else:
+                    city_list = argv[2:]
+        else:
+            raise FileNotFoundError(
+                f"Cities file {Path(argv[1])} not found.\n" + HELP_MESSAGE
             )
-        if len(argv) > 3:
-            raise Usage(
-                "Too many arguments.\n" + HELP_MESSAGE.format(Path(__file__).name)
-            )
-        start_loc = cities_list.index(argv[2])
-        city_list = cities_list[start_loc:]
     else:
+        # If arguments are city names, run those cities
         city_list = argv[1:]
-        cities_list = city_list
 
-    return city_list, cities_list, city_file_provided
+    return city_list

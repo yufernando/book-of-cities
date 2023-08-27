@@ -108,7 +108,7 @@ def get_boundaries(city_list):
 
 def main():
     if len(sys.argv) == 1:
-        raise Usage("Must provide arguments.\n" + HELP_MESSAGE.format(__file__))
+        raise IndexError("Must provide arguments.\n" + HELP_MESSAGE)
 
     city_file_provided = False
 
@@ -120,12 +120,12 @@ def main():
 
     if sys.argv[1] == "start":
         if not city_file_provided:
-            raise Usage(
+            raise (
                 "Must provide a list of cities in a text file.\n"
-                + HELP_MESSAGE.format(__file__)
+                + HELP_MESSAGE
             )
         if len(sys.argv) > 3:
-            raise Usage("Too many arguments.\n" + HELP_MESSAGE.format(__file__))
+            raise IndexError("Too many arguments.\n" + HELP_MESSAGE
         start_loc = cities_list.index(sys.argv[2])
         city_list = cities_list[start_loc:]
     else:

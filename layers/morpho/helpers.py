@@ -1,6 +1,7 @@
 """
 Helper functions
 """
+import logging
 import math
 import os
 
@@ -15,6 +16,8 @@ from shapely.errors import GEOSException
 
 
 # warnings.filterwarnings("ignore")
+
+logger = logging.getLogger("log")
 
 
 def reverse_bearing(x):
@@ -75,7 +78,7 @@ def get_orientation_order(count: np.ndarray) -> float:
         orientation_order = 1 - (((H0 - Hg) / (Hmax - Hg)) ** 2)
 
     except Exception as e:
-        print(f"Error in orientation order {e}")
+        logger.debug(f"Error in orientation order {e}")
 
     return orientation_order
 
@@ -177,7 +180,6 @@ def get_area(gdf):
 
 def get_fractal_dimension(graph):
     """Get fractal dimension of street network."""
-    # fp = f"./street-network-{ID}.png"
     filepath = "./street-network.png"
     ox.plot_graph(
         graph,
@@ -190,11 +192,8 @@ def get_fractal_dimension(graph):
         save=True,
         filepath=filepath,
     )
-    # I = imageio.imread(fp, as_gray="True")/255.0
     image = imageio.imread(filepath, mode="L") / 255.0
-    # get_ipython().system(" rm $fp # comment if you want to save the plot")
     os.remove(filepath)
-    # print("Deleted:", fp)
     return -fractal_dimension(image)
 
 

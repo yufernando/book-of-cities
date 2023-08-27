@@ -4,7 +4,6 @@
 Get Buildings and Streets and run Morphometrics
 """
 import logging
-import sys
 import time
 from pathlib import Path
 
@@ -12,7 +11,7 @@ import geopandas as gpd
 import osmnx as ox
 import pandas as pd
 
-from layers.helpers import find_next_city, format_time, parse_user_input
+from layers.helpers import find_next_city, format_time
 from layers.morpho import get_morphometrics
 
 data_folder = Path("../data/")
@@ -77,7 +76,9 @@ def get_streets(gdf_collapsed):
     return gdf_streets
 
 
-def get_city_layers(city, buildings=True, streets=True, morphometrics=True, save=True):
+def get_city_layers(
+    city, buildings=True, streets=True, morphometrics=True, save=True, full=True
+):
     """Get city layers."""
     logger.info("-----------------------------------------------------------------")
     logger.info("City:       %s", city)
@@ -111,7 +112,7 @@ def get_city_layers(city, buildings=True, streets=True, morphometrics=True, save
         logger.info("Buildings:  Skipped.")
 
     if morphometrics:
-        gdf = get_morphometrics(gdf, full=True)
+        gdf = get_morphometrics(gdf, full=full)
         if save:
             out_file = data_folder / "2_morphometrics" / (city + " - morpho.gpkg")
             gdf.to_file(out_file, driver="GPKG")
@@ -123,24 +124,22 @@ def get_city_layers(city, buildings=True, streets=True, morphometrics=True, save
     logger.info("Done: %s. Time elapsed: %s", city, format_time(end - start))
 
 
-def main(buildings=True, streets=True, morphometrics=True, csv_out=True):
+def main(
+    city_list, buildings=True, streets=True, morphometrics=True, full=True, csv_out=True
+):
     """Entrypoint."""
-    city_list, cities_list, city_file_provided = parse_user_input(sys.argv)
-    logger.info("City list:  %s", ", ".join(city_list))
-
     for city in city_list:
         try:
-            get_city_layers(city, buildings, streets, morphometrics, save=True)
-        except ValueError as e:
-            logger.error(f"Boundaries: {e}")
-            continue
+            get_city_layers(
+                city, buildings, streets, morphometrics, full=full, save=True
+            )
         except Exception as e:
-            logger.error(f"Error processing city {city}. Skipping.")
             logger.exception(e)  # logger.exception adds traceback and nice error format
+            logger.error("Error processing city %s. Skipping.", city)
             continue
 
-    if city_file_provided:
-        next_city = find_next_city(cities_list, city_list[0])
+    next_city = find_next_city(city_list, city)
+    if next_city:
         logger.info("Next: %s", next_city)
 
     if csv_out:
@@ -164,7 +163,3 @@ def main(buildings=True, streets=True, morphometrics=True, csv_out=True):
         # Save
         df_full.to_csv(out_csv, index=None)
         logger.info("CSV: Saved %s", out_csv)
-
-
-if __name__ == "__main__":
-    main()
