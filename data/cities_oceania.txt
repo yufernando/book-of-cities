@@ -1,0 +1,7 @@
+Melbourne
+Sydney
+Canberra
+Brisbane
+Perth
+Adelaide
+Auckland
