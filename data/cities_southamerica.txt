@@ -4,5 +4,5 @@ Rio de Janeiro
 Mexico City
 Havana
 Caracas
-La Plata
-Bogotá
+La Plata: not enough polygons in OSM admin_level=8
+Bogota
