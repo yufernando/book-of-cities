@@ -143,6 +143,7 @@ def main(
         logger.info("Next: %s", next_city)
 
     if csv_out:
+        # Concatenate all files in the 2_morphometrics folder
         morpho_folder = data_folder / "2_morphometrics"
         csv_folder = data_folder / "4_csv"
         out_csv = csv_folder / "Morphometrics.csv"

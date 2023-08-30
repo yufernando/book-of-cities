@@ -139,9 +139,12 @@ def add_spatial_vars(gdf, index, graph, edges, full, verbose=False):
     primal = momepy.gdf_to_nx(edges, approach="primal")
 
     # Debug
-    avg_node_degree = momepy.mean_node_degree(primal, verbose=False)
-    logger.info(f"{avg_node_degree=}")
-    gdf.loc[index, "avg_node_degree"] = avg_node_degree
+    try:
+        avg_node_degree = momepy.mean_node_degree(primal, verbose=False)
+        logger.info("avg_node_degree=%s", avg_node_degree)
+        gdf.loc[index, "avg_node_degree"] = avg_node_degree
+    except TypeError as e:
+        logger.debug("Error calculating node degree: %s", e)
 
     logger.debug("Betweenness.")
     primal = momepy.betweenness_centrality(

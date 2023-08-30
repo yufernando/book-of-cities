@@ -1,4 +1,10 @@
+"""
+Main Entrypoint
+"""
+import sys
+
 import config
+from boundaries.boundaries import get_boundaries
 from layers import main
 from layers.logger import init_logger
 
@@ -6,6 +12,11 @@ if __name__ == "__main__":
     logger = init_logger(level=config.LOG_LEVEL)
 
     logger.info("City list:      %s", ", ".join(config.CITY_LIST))
+
+    if len(sys.argv) == 2 and sys.argv[1] == "boundaries":
+        get_boundaries(config.CITY_LIST)
+        sys.exit(0)
+
     logger.info("Parameters:")
     logger.info(" Streets:       %s", config.STREETS)
     logger.info(" Buildings:     %s", config.BUILDINGS)

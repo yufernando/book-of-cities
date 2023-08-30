@@ -1,4 +1,4 @@
-.PHONY: docker shell token tests
+.PHONY: docker shell token tests run
 docker:
 	@docker run -d --rm -p 8888:8888 -v "/Users/fer/aretian-drive/Research/Book of Cities":"/home/jovyan/work" -e JUPYTER_ENABLE_LAB=yes -e GRANT_SUDO=yes --user root --name cities yufernando/jupyterlab:geo
 	@sleep 2
@@ -16,4 +16,4 @@ tests:
 	pytest morpho/tests
 
 run:
-	python run.py data/cities_us.txt
+	docker exec -it -w /home/jovyan/work/code cities python run.py $(cmd)

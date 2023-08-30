@@ -95,6 +95,10 @@ def parse_input(argv: list[str]) -> list[str]:
         logger.debug("No arguments provided.")
         city_list = None
 
+    elif argv[1] == "boundaries":
+        logger.debug("Boundaries argument provided.")
+        city_list = None
+
     # If first argument is a file, load cities from file
     elif Path(argv[1]).suffix == ".txt":
         if Path(argv[1]).is_file():
