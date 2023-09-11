@@ -3,7 +3,7 @@ Export images
 Exports images from map layout to figs folder.
 """
 # Choose city
-city = "Mexico City"
+city = "Athens"
 # Choose full layers
 full = False
 
@@ -13,7 +13,7 @@ from pathlib import Path
 # Helper functions
 project = QgsProject.instance()
 root = project.layerTreeRoot()
-root_folder = Path("/Users/fer/aretian-drive/Research/Book of Cities/")
+root_folder = Path("/Users/fer/drive-aretian/Research/City Science - Global City Profiles/")
 
 
 def toggle_layer(layer_name, visible=True):

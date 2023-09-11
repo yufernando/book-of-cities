@@ -3,14 +3,14 @@ Load Layers and Apply Styles
 Load Buildings, Streets and Morphometrics and applies styles.
 """
 # Choose city
-city = "Mexico City"
+city = "Athens"
 # Choose full layers
 full = False
 
 # Import packages
 from pathlib import Path
 
-root_folder = Path("/Users/fer/aretian-drive/Research/Book of Cities/")
+root_folder = Path("/Users/fer/drive-aretian/Research/City Science - Global City Profiles/")
 data_folder = root_folder / "data/"
 boundary_folder = data_folder / "0_boundaries"
 project = QgsProject.instance()

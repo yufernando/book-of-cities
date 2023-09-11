@@ -11,7 +11,7 @@ For a given city, perform the following steps:
 If you use QGIS to edit the boundaries save the QGIS file into `data/3_QGIS/[city].qgz` for step 3.
 
 ### 2. Get buildings, streets and morphometrics
-- Edit `config.py` and run the script with `python run.py` or any option described in the section `Docker` below.The output will be stored in `data/1_buildings_streets` and `data/2_morphometrics`.
+- Edit `config.py` and run the script with `python run.py` or any option described in the section `Docker` below. The output will be stored in `data/1_buildings_streets` and `data/2_morphometrics`.
 
 ### 3. Visualize in QGIS
 - Load the boundaries in `data/0_boundaries/[city]/[city].gpkg` into QGIS and add a `Dark Matter (retina)` layer. Save the file into `data/3_QGIS/[city].qgz` if it does not exist.
