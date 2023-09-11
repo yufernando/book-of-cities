@@ -2,10 +2,15 @@
 Load Layers and Apply Styles
 Load Buildings, Streets and Morphometrics and applies styles.
 """
-# Choose city
-city = "Athens"
+from pathlib import Path
+
 # Choose full layers
 full = False
+
+# City
+city = Path(QgsProject.instance().fileName()).stem
+#city = "Saint Louis"
+print("City:", city)
 
 # Import packages
 from pathlib import Path

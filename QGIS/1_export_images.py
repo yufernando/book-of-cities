@@ -2,10 +2,16 @@
 Export images
 Exports images from map layout to figs folder.
 """
-# Choose city
-city = "Athens"
+from pathlib import Path
+
 # Choose full layers
 full = False
+
+# City
+city = Path(QgsProject.instance().fileName()).stem
+#city = "Saint Louis"
+print("City:", city)
+
 
 # Import packages
 from pathlib import Path
