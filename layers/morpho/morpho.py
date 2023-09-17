@@ -191,11 +191,11 @@ def add_built_vars(gdf, index, edges, polygon, verbose=False):
         buildings_gdf = ox.features_from_polygon(polygon, tags={"building": True})
     except ox._errors.InsufficientResponseError:
         logger.debug("No data elements in server response.")
-        return gdf
+        return gdf, None
 
     if buildings_gdf.empty:
         logger.debug("No buildings in polygon.")
-        return gdf
+        return gdf, None
 
     buildings_gdf_projected = ox.project_gdf(buildings_gdf)
     buildings_gdf_projected = buildings_gdf_projected.reset_index()
@@ -204,7 +204,7 @@ def add_built_vars(gdf, index, edges, polygon, verbose=False):
     ]
     if buildings_gdf_projected.empty:
         logger.debug("Projected buildings_gdf is empty.")
-        return gdf
+        return gdf, None
 
     logger.debug("momepy preprocess.")
     buildings = momepy.preprocess(
@@ -331,7 +331,8 @@ def add_built_vars(gdf, index, edges, polygon, verbose=False):
 def add_infra_vars(gdf, index, buildings, basic):
     """Add infrastructure variables to gdf."""
     gdf.loc[index, "total_area"] = gdf.loc[index, "area_m2"]
-    gdf.loc[index, "total_built_area"] = buildings["area"].sum()
+    if buildings is not None:
+        gdf.loc[index, "total_built_area"] = buildings["area"].sum()
     gdf.loc[index, "total_street_length"] = basic["street_length_total"]
     return gdf
 
@@ -340,7 +341,7 @@ def get_morphometrics(
     gdf: gpd.GeoDataFrame, full: bool = True, verbose: bool = False
 ) -> None:
     """Get morphometrics for a city."""
-    logger.info("Morphometrics...")
+    logger.info("Morphometrics:")
 
     # Setup
     gdf = clean_gdf(gdf)
