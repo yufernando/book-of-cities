@@ -1,4 +1,5 @@
 """Configuration variables"""
+
 from layers.helpers import parse_user_input, read_cities_from_file
 
 # CITY_FILE = "data/cities_us.txt"
