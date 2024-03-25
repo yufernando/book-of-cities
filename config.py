@@ -5,9 +5,10 @@ from layers.helpers import parse_user_input, read_cities_from_file
 # CITY_FILE = "data/cities_us.txt"
 # CITY_FILE = "data/cities_europe.txt"
 # CITY_FILE = "data/cities_southamerica.txt"
-CITY_FILE = "data/cities_asia.txt"
+# CITY_FILE = "data/cities_asia.txt"
 # CITY_FILE = "data/cities_mena.txt"
 # CITY_FILE = "data/cities_oceania.txt"
+CITY_FILE = "data/cities_barcelona.txt"
 STREETS = True
 BUILDINGS = True
 MORPHOMETRICS = True

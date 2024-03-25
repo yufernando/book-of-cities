@@ -36,7 +36,12 @@ def get_polygons(city):
     gdf["UID"] = gdf.index
 
     gdf["collapse"] = 0
-    gdf_collapsed = gdf.dissolve(by="collapse")
+    gdf = gdf[gdf.is_valid]
+    try:
+        gdf_collapsed = gdf.dissolve(by="collapse")
+    except Exception as e:
+        print(e)
+        breakpoint()
 
     return gdf, gdf_collapsed
 
