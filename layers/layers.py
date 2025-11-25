@@ -25,8 +25,8 @@ def get_polygons(city):
 
     gdf = gpd.read_file(input_file, driver="GPKG")
     logger.info("Boundaries: Input %s (%s polygons)", input_file, len(gdf))
-    if len(gdf) > 200:
-        raise ValueError(f"{city} boundaries file too large: {len(gdf)} polygons.")
+    # if len(gdf) > 300:
+    #     raise ValueError(f"{city} boundaries file too large: {len(gdf)} polygons.")
 
     # Force gdf projection
     gdf = ox.project_gdf(gdf, to_crs="epsg:4326", to_latlong=False)

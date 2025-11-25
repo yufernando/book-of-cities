@@ -1,6 +1,7 @@
 """
 Morphometrics
 """
+
 import logging
 import warnings
 
@@ -191,6 +192,9 @@ def add_built_vars(gdf, index, edges, polygon, verbose=False):
         buildings_gdf = ox.features_from_polygon(polygon, tags={"building": True})
     except ox._errors.InsufficientResponseError:
         logger.debug("No data elements in server response.")
+        return gdf, None
+    except Exception as e:
+        logger.debug("Error:", e)
         return gdf, None
 
     if buildings_gdf.empty:
