@@ -1,6 +1,6 @@
 .PHONY: docker shell token tests run concatenate
 
-# Derive project root from Makefile location (one level up from code/)
+# Derive project root from Makefile location (one level up from cityform/)
 PROJECT_ROOT ?= $(shell cd $(dir $(lastword $(MAKEFILE_LIST)))/.. && pwd)
 
 docker:
@@ -20,7 +20,7 @@ tests:
 	pytest morpho/tests
 
 run:
-	docker exec -it -w /home/jovyan/work/code cities python run.py $(cmd)
+	docker exec -it -w /home/jovyan/work/cityform cities python run.py $(cmd)
 
 concatenate:
 	python concatenate.py

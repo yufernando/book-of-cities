@@ -11,19 +11,19 @@ from layers.helpers import parse_user_input, read_cities_from_file
 # Project root (one level up from code/)
 PROJECT_ROOT = Path(
     os.environ.get(
-        "BOC_PROJECT_ROOT",
+        "CITYFORM_PROJECT_ROOT",
         Path(__file__).resolve().parent.parent,
     )
 )
 
 # Data directories
-DATA_ROOT = Path(os.environ.get("BOC_DATA_ROOT", PROJECT_ROOT / "data"))
+DATA_ROOT = Path(os.environ.get("CITYFORM_DATA_ROOT", PROJECT_ROOT / "data"))
 
 # Drive/Research folder (for QGIS outputs)
 # Default assumes drive folder is at same level as project root
 DRIVE_ROOT = Path(
     os.environ.get(
-        "BOC_DRIVE_ROOT",
+        "CITYFORM_DRIVE_ROOT",
         PROJECT_ROOT.parent / "drive",
     )
 )
@@ -31,7 +31,7 @@ DRIVE_ROOT = Path(
 # QGIS-specific paths
 # These can be overridden via environment variables if the structure differs
 QGIS_RESEARCH_SUBPATH = os.environ.get(
-    "BOC_QGIS_RESEARCH_SUBPATH", "Research/City Science - Global City Profiles"
+    "CITYFORM_QGIS_RESEARCH_SUBPATH", "Research/City Science - Global City Profiles"
 )
 QGIS_DATA_ROOT = DRIVE_ROOT / QGIS_RESEARCH_SUBPATH / "data"
 QGIS_FIGS_ROOT = DRIVE_ROOT / QGIS_RESEARCH_SUBPATH / "figs"

@@ -72,7 +72,7 @@ out skel qt;
 
 
 def make_request(city_id, admin_level):
-    headers = {"User-Agent": "Book-of-Cities/0.1"}
+    headers = {"User-Agent": "cityform/0.1"}
     url = "http://overpass-api.de/api/interpreter"  # Overpass API URL
     r = requests.get(
         url,
