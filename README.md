@@ -3,6 +3,9 @@
 
 CityForm is a Python tool for analyzing and visualizing urban form metrics for cities worldwide. It retrieves city boundaries, extracts building and street networks from OpenStreetMap, calculates comprehensive morphometric statistics, and generates GIS visualizations.
 
+**Author:** [yufernando](https://github.com/yufernando)  
+**License:** [MIT](LICENSE)
+
 ## Features
 
 - Automated boundary retrieval from OpenStreetMap or US Census data
@@ -24,6 +27,7 @@ CityForm is a Python tool for analyzing and visualizing urban form metrics for c
 - [Tests](#tests)
 - [Notes](#notes)
 - [Sources](#sources)
+- [License](#license)
 
 ---
 
@@ -36,6 +40,11 @@ cd cityform
 ```
 
 2. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+Or install manually:
 ```bash
 pip install geopandas osmnx networkx pandas numpy momepy requests osm2geojson
 ```
@@ -69,6 +78,11 @@ pip install geopandas osmnx networkx pandas numpy momepy requests osm2geojson
 - `osm2geojson` - OSM to GeoJSON conversion
 
 Install all dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+Or install manually:
 ```bash
 pip install geopandas osmnx networkx pandas numpy momepy requests osm2geojson
 ```
@@ -285,3 +299,9 @@ pytest layers/tests/
 - **US Census Data**: [Census TIGER/Line Shapefiles](https://www2.census.gov/geo/tiger/TIGER_RD18/STATE/)
 - **OpenStreetMap**: [Overpass API](http://overpass-api.de/api/interpreter) and [Overpass Turbo](https://overpass-turbo.eu)
 - **New York City Boroughs**: [NYC Open Data Portal](https://data.cityofnewyork.us/City-Government/Borough-Boundaries/tqmj-j8zm)
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
