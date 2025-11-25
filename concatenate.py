@@ -1,17 +1,17 @@
 """
 Concatenate all morphometrics into one CSV.
 """
+
 import sys
-from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
 
+import config
+
 
 def get_last_modified_file(directory):
-    directory_path = Path(directory)
-
-    files = [item for item in directory_path.iterdir() if item.is_file()]
+    files = [item for item in directory.iterdir() if item.is_file()]
 
     if not files:
         return None  # No subdirectories found
@@ -21,9 +21,8 @@ def get_last_modified_file(directory):
     return sorted_files[0].name
 
 
-data_folder = Path("../data/")
-morpho_folder = data_folder / "2_morphometrics"
-csv_folder = data_folder / "4_csv"
+morpho_folder = config.MORPHOMETRICS_DIR
+csv_folder = config.CSV_DIR
 out_csv = csv_folder / "Morphometrics.csv"
 
 df = pd.read_csv(out_csv)
@@ -35,7 +34,8 @@ last_modified_file = get_last_modified_file(morpho_folder)
 print("The last modified file is:", last_modified_file)
 
 user_input = input(
-    "Do you wish to concatenate all morphometrics files and overwrite Morphometrics.csv? (y/n) "
+    "Do you wish to concatenate all morphometrics files and overwrite "
+    "Morphometrics.csv? (y/n) "
 )
 
 if user_input.lower() != "y":
@@ -57,6 +57,6 @@ for file in morpho_folder.iterdir():
         df_full = pd.concat([df_full, gdf])
 
 # Save
-df_full.to_csv(out_csv, index=None)
+df_full.to_csv(str(out_csv), index=None)
 # logger.info("CSV: Saved %s", out_csv)
 print("Saved", out_csv)

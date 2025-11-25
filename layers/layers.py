@@ -5,23 +5,21 @@ Get Buildings and Streets and run Morphometrics
 """
 import logging
 import time
-from pathlib import Path
 
 import geopandas as gpd
 import osmnx as ox
 import pandas as pd
 
+import config
 from layers.helpers import find_next_city, format_time
 from layers.morpho import get_morphometrics
-
-data_folder = Path("../data/")
 
 logger = logging.getLogger("log")
 
 
 def get_polygons(city):
     """Get polygons from city."""
-    input_file = data_folder / "0_boundaries" / city / (city + ".gpkg")
+    input_file = config.BOUNDARIES_DIR / city / (city + ".gpkg")
 
     gdf = gpd.read_file(input_file, driver="GPKG")
     logger.info("Boundaries: Input %s (%s polygons)", input_file, len(gdf))
@@ -94,7 +92,7 @@ def get_city_layers(
     if streets:
         gdf_streets = get_streets(gdf_collapsed)
         if save:
-            out_file = data_folder / "1_buildings_streets" / (city + " - Streets.gpkg")
+            out_file = config.BUILDINGS_STREETS_DIR / (city + " - Streets.gpkg")
             if out_file.exists():
                 out_file.unlink()
             gdf_streets.to_file(out_file, driver="GPKG")
@@ -106,9 +104,7 @@ def get_city_layers(
         gdf_buildings = get_buildings(gdf_collapsed)
         if save:
             # Save
-            out_file = (
-                data_folder / "1_buildings_streets" / (city + " - Buildings.gpkg")
-            )
+            out_file = config.BUILDINGS_STREETS_DIR / (city + " - Buildings.gpkg")
             if out_file.exists():
                 out_file.unlink()
             gdf_buildings.to_file(out_file, driver="GPKG")
@@ -119,7 +115,7 @@ def get_city_layers(
     if morphometrics:
         gdf = get_morphometrics(gdf, full=full)
         if save:
-            out_file = data_folder / "2_morphometrics" / (city + " - morpho.gpkg")
+            out_file = config.MORPHOMETRICS_DIR / (city + " - morpho.gpkg")
             gdf.to_file(out_file, driver="GPKG")
             logger.info("Morphometrics: Saved %s", out_file)
     else:
@@ -149,8 +145,8 @@ def main(
 
     if csv_out:
         # Concatenate all files in the 2_morphometrics folder
-        morpho_folder = data_folder / "2_morphometrics"
-        csv_folder = data_folder / "4_csv"
+        morpho_folder = config.MORPHOMETRICS_DIR
+        csv_folder = config.CSV_DIR
         out_csv = csv_folder / "Morphometrics.csv"
         df = pd.read_csv(out_csv)
 

@@ -1,15 +1,16 @@
 """
 Get boundaries from OSM
 """
+
 # Import packages
 import logging
-from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
 import requests
 from osm2geojson import json2geojson
 
+import config
 from layers.helpers import get_city_id
 
 logger = logging.getLogger("log")
@@ -118,14 +119,16 @@ def get_boundaries(city_list):
         logger.info("City:      %s", city)
 
         # Get city_id and admin_level from file
-        city_id, admin_level = get_query_settings_from_file(city, "data/query_data.csv")
+        query_data_file = config.DATA_ROOT / "query_data.csv"
+        city_id, admin_level = get_query_settings_from_file(city, str(query_data_file))
 
         # Get city id from Nominatim
         if pd.isna(city_id):
             try:
                 logger.debug("city_id not found. Geolocating city: %s", city)
                 city_id = get_city_id(city)
-                save_query_data(city, "city_id", city_id, "data/query_data.csv")
+                query_data_file = config.DATA_ROOT / "query_data.csv"
+                save_query_data(city, "city_id", city_id, str(query_data_file))
             except ValueError:
                 logger.error("Could not geolocate city: %s", city)
                 continue
@@ -133,11 +136,13 @@ def get_boundaries(city_list):
         # Get boundaries from Overpass API
         if pd.isna(admin_level):
             logger.debug(
-                "admin_level not found. Making requests to for most granular admin_level."
+                "admin_level not found. Making requests for most granular "
+                "admin_level."
             )
             admin_level, geojson = get_admin_level(city_id)
             # Save admin_level
-            save_query_data(city, "admin_level", admin_level, "data/query_data.csv")
+            query_data_file = config.DATA_ROOT / "query_data.csv"
+            save_query_data(city, "admin_level", admin_level, str(query_data_file))
             if not geojson:
                 logger.error("No boundaries found for city: %s", city)
                 continue
@@ -150,7 +155,8 @@ def get_boundaries(city_list):
             geojson = json2geojson(geojson)
         except TypeError:
             logger.error(
-                "There was an error parsing the geojson for city: %s. Please download geojson from https://overpass-turbo.eu",
+                "There was an error parsing the geojson for city: %s. "
+                "Please download geojson from https://overpass-turbo.eu",
                 city,
             )
             continue
@@ -167,9 +173,8 @@ def get_boundaries(city_list):
             raise ValueError(message)
 
         # Save
-        data_folder = Path("../data")
         out_city = city.split(",")[0]  # Fix "Saint Petersburg, Russia" and others
-        out_file = data_folder / "0_boundaries" / out_city / (out_city + ".gpkg")
+        out_file = config.BOUNDARIES_DIR / out_city / (out_city + ".gpkg")
         if not out_file.parent.exists():
             out_file.parent.mkdir(parents=True)
         gdf.to_file(out_file, driver="GPKG")

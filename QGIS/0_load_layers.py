@@ -2,8 +2,18 @@
 Load Layers and Apply Styles
 Load Buildings, Streets and Morphometrics and applies styles.
 """
+
 # Import packages
+import sys
 from pathlib import Path
+
+# Add code directory to path to import config
+# Assumes QGIS script is in code/QGIS/, so go up one level
+code_dir = Path(__file__).resolve().parent.parent
+if str(code_dir) not in sys.path:
+    sys.path.insert(0, str(code_dir))
+
+import config
 
 # Choose full layers
 full = False
@@ -12,8 +22,9 @@ full = False
 city = Path(QgsProject.instance().fileName()).stem
 print("City:", city)
 
-root_folder = Path("/Users/fer/drive-aretian/Research/City Science - Global City Profiles/")
-data_folder = root_folder / "data/"
+# Use config paths - QGIS_DATA_ROOT points to the research data folder
+root_folder = config.QGIS_DATA_ROOT.parent  # Research folder root
+data_folder = config.QGIS_DATA_ROOT  # data/ subfolder
 boundary_folder = data_folder / "0_boundaries"
 project = QgsProject.instance()
 root = project.layerTreeRoot()
@@ -29,7 +40,7 @@ processing.run(
 
 layer = iface.addVectorLayer(output_file, "", "ogr")
 layer.setName("Dissolved")
-layer.loadNamedStyle(str(root_folder / f"data/3_QGIS/styles/Dissolved.qml"))
+layer.loadNamedStyle(str(data_folder / "3_QGIS/styles/Dissolved.qml"))
 layer.triggerRepaint()
 print("Applied style to Dissolved")
 
@@ -105,9 +116,9 @@ def apply_styles(layer_name_list):
 
     for layer_name in layer_name_list:
         layer = project.mapLayersByName(layer_name)[0]
-        style_file = str(root_folder / f"data/3_QGIS/styles/{layer_name}.qml")
+        style_file = str(data_folder / f"3_QGIS/styles/{layer_name}.qml")
         if layer_name == city:
-            style_file = str(root_folder / f"data/3_QGIS/styles/Boundary.qml")
+            style_file = str(data_folder / "3_QGIS/styles/Boundary.qml")
         layer.loadNamedStyle(style_file)
         layer.triggerRepaint()
         print("Applied style to", layer_name)

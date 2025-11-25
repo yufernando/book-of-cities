@@ -1,6 +1,10 @@
 .PHONY: docker shell token tests run concatenate
+
+# Derive project root from Makefile location (one level up from code/)
+PROJECT_ROOT ?= $(shell cd $(dir $(lastword $(MAKEFILE_LIST)))/.. && pwd)
+
 docker:
-	@docker run -d --rm -p 8888:8888 -v "/Users/fer/Documents/Aretian/book-of-cities":"/home/jovyan/work" -e JUPYTER_ENABLE_LAB=yes -e GRANT_SUDO=yes --user root --name cities yufernando/jupyterlab
+	@docker run -d --rm -p 8888:8888 -v "$(PROJECT_ROOT):/home/jovyan/work" -e JUPYTER_ENABLE_LAB=yes -e GRANT_SUDO=yes --user root --name cities yufernando/jupyterlab
 	@sleep 2
 	@/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --new-window --app="http://localhost:8888" > /dev/null
 	@$(MAKE) token

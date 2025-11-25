@@ -2,8 +2,18 @@
 Export images
 Exports images from map layout to figs folder.
 """
+
 # Import packages
+import sys
 from pathlib import Path
+
+# Add code directory to path to import config
+# Assumes QGIS script is in code/QGIS/, so go up one level
+code_dir = Path(__file__).resolve().parent.parent
+if str(code_dir) not in sys.path:
+    sys.path.insert(0, str(code_dir))
+
+import config
 
 # Choose full layers
 full = False
@@ -15,7 +25,6 @@ print("City:", city)
 # Helper functions
 project = QgsProject.instance()
 root = project.layerTreeRoot()
-root_folder = Path("/Users/fer/drive-aretian/Research/City Science - Global City Profiles/")
 
 
 def toggle_layer(layer_name, visible=True):
@@ -98,7 +107,7 @@ for layer_name in layer_name_list:
     toggle_layer("Buildings")
     toggle_layer("Streets")
     toggle_layer(layer_name)
-    output_file_path = root_folder / f"figs/{city}/{layer_name}.jpg"
+    output_file_path = config.QGIS_FIGS_ROOT / city / f"{layer_name}.jpg"
     save_image(output_file_path)
     #    saved_message(output_file_path)
     print("Saved:", output_file_path)
@@ -108,7 +117,7 @@ layer_name_list = ["Buildings", "Streets"]
 for layer_name in layer_name_list:
     reset_all()
     toggle_layer(layer_name)
-    output_file_path = root_folder / f"figs/{city}/{layer_name}.jpg"
+    output_file_path = config.QGIS_FIGS_ROOT / city / f"{layer_name}.jpg"
     save_image(output_file_path)
     #    saved_message(output_file_path)
     print("Saved:", output_file_path)
@@ -117,7 +126,7 @@ for layer_name in layer_name_list:
 reset_all()
 toggle_layer("Buildings")
 toggle_layer("Streets")
-output_file_path = root_folder / f"figs/{city}/Buildings and Streets.jpg"
+output_file_path = config.QGIS_FIGS_ROOT / city / "Buildings and Streets.jpg"
 save_image(output_file_path)
 # saved_message(output_file_path)
 print("Saved:", output_file_path)
@@ -125,7 +134,7 @@ print("Saved:", output_file_path)
 # Export Boundaries
 reset_all()
 toggle_layer(city)
-output_file_path = root_folder / f"figs/{city}/Boundaries.jpg"
+output_file_path = config.QGIS_FIGS_ROOT / city / "Boundaries.jpg"
 save_image(output_file_path)
 # saved_message(output_file_path)
 print("Saved:", output_file_path)
