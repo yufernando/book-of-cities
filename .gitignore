@@ -29,6 +29,9 @@ ENV/
 */.ipynb_checkpoints/*
 notebooks/sandbox*.ipynb
 
+# Internal TODO file
+TODO.md
+
 # Data files
 *.csv
 *.xlsx
