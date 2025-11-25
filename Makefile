@@ -1,6 +1,6 @@
 .PHONY: docker shell token tests run concatenate
 docker:
-	@docker run -d --rm -p 8888:8888 -v "/Users/fer/drive-aretian/Research/City Science - Global City Profiles":"/home/jovyan/work" -e JUPYTER_ENABLE_LAB=yes -e GRANT_SUDO=yes --user root --name cities yufernando/jupyterlab:geo
+	@docker run -d --rm -p 8888:8888 -v "/Users/fer/Documents/Aretian/book-of-cities":"/home/jovyan/work" -e JUPYTER_ENABLE_LAB=yes -e GRANT_SUDO=yes --user root --name cities yufernando/jupyterlab
 	@sleep 2
 	@/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --new-window --app="http://localhost:8888" > /dev/null
 	@$(MAKE) token
